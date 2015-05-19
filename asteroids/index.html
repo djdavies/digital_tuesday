@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+
+
+    <title>Asteroids</title>
+    
+    
+    <link rel="stylesheet" href="css/normalize.css">
+
+    
+        <style>
+      html {
+  background-color: black;
+  overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+html .game {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000000;
+}
+html .game .player, html .game .missle, html .game .asteroid {
+  opacity: 0;
+}
+html .game .explosion {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: white;
+  border-radius: 50%;
+  -moz-transform: translate(-50%, -50%) scale(0);
+  -ms-transform: translate(-50%, -50%) scale(0);
+  -webkit-transform: translate(-50%, -50%) scale(0);
+  transform: translate(-50%, -50%) scale(0);
+  -moz-animation: boom 0.2s ease 0s 1;
+  -webkit-animation: boom 0.2s ease 0s 1;
+  animation: boom 0.2s ease 0s 1;
+}
+html .game .player {
+  position: absolute;
+  -moz-transform-origin: 6px 8px;
+  -ms-transform-origin: 6px 8px;
+  -webkit-transform-origin: 6px 8px;
+  transform-origin: 6px 8px;
+  -moz-backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  top: 50%;
+  left: 50%;
+  border-bottom: 16px solid white;
+  border-right: 6px solid transparent;
+  border-left: 6px solid transparent;
+  margin-left: -6px;
+  margin-top: -8px;
+}
+html .game .missle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  background-color: white;
+  width: 1px;
+  height: 12px;
+  margin-top: -6px;
+}
+html .game .asteroid {
+  position: absolute;
+  background-color: white;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+}
+html .game .asteroid:before, html .game .asteroid:after {
+  content: "";
+  -moz-transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  -webkit-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+  background-color: white;
+  position: absolute;
+  border-radius: 50%;
+  top: 50%;
+  left: 50%;
+}
+html .game .asteroid.type-a {
+  width: 90px;
+  height: 90px;
+  margin-top: -45px;
+  margin-left: -45px;
+}
+html .game .asteroid.type-a:before {
+  width: 30px;
+  height: 30px;
+  margin-top: -40px;
+  margin-left: -10px;
+}
+html .game .asteroid.type-a:after {
+  width: 45px;
+  height: 45px;
+  margin-top: 25px;
+  margin-left: 30px;
+}
+html .game .asteroid.type-b {
+  width: 50px;
+  height: 50px;
+  margin-top: -15px;
+  margin-left: -15px;
+}
+html .game .asteroid.type-b:before {
+  width: 25px;
+  height: 25px;
+  margin-top: -15px;
+  margin-left: -10px;
+}
+html .game .asteroid.type-b:after {
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  margin-left: 17px;
+}
+html .game .asteroid.type-c {
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
+  margin-left: -15px;
+}
+html .game .asteroid.type-c:before {
+  width: 15px;
+  height: 15px;
+  margin-top: -8px;
+  margin-left: -10px;
+}
+html .game .asteroid.type-c:after {
+  width: 10px;
+  height: 10px;
+  margin-top: 7px;
+  margin-left: -11px;
+}
+html .game .score {
+  position: absolute;
+  font-size: 32px;
+  padding: 30px;
+  display: inline-block;
+  color: white;
+  font-family: sans-serif;
+  bottom: 0;
+}
+html .game .score:before {
+  position: absolute;
+  top: 10px;
+  font-size: 10px;
+  font-family: sans-serif;
+  color: white;
+}
+html .game .score.left {
+  left: 0;
+  text-align: left;
+}
+html .game .score.left:before {
+  content: "SCORE";
+  left: 32px;
+}
+html .game .score.right {
+  right: 0;
+  text-align: right;
+}
+html .game .score.right:before {
+  content: "HIGH SCORE";
+  right: 32px;
+}
+
+@-moz-keyframes boom {
+  0% {
+    -moz-transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0);
+  }
+  30% {
+    -moz-transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    -moz-transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+@-webkit-keyframes boom {
+  0% {
+    -webkit-transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0);
+  }
+  30% {
+    -webkit-transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    -webkit-transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+@keyframes boom {
+  0% {
+    -moz-transform: translate(-50%, -50%) scale(0);
+    -ms-transform: translate(-50%, -50%) scale(0);
+    -webkit-transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0);
+  }
+  30% {
+    -moz-transform: translate(-50%, -50%) scale(1);
+    -ms-transform: translate(-50%, -50%) scale(1);
+    -webkit-transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    -moz-transform: translate(-50%, -50%) scale(0);
+    -ms-transform: translate(-50%, -50%) scale(0);
+    -webkit-transform: translate(-50%, -50%) scale(0);
+    transform: translate(-50%, -50%) scale(0);
+  }
+}
+.hidden {
+  display: none !important;
+}
+
+    </style>
+
+    
+        <script src="js/prefixfree.min.js"></script>
+
+    
+  </head>
+
+  <body>
+
+    <div class="game"></div>
+    
+    
+
+    <script src="js/index.js"></script>
+
+
+    
+    
+    
+  </body>
+</html>

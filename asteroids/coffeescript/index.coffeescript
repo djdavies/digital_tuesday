@@ -1,0 +1,344 @@
+window.requestAnimationFrame = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || window.msRequestAnimationFrame
+
+class AsteroidsView
+
+	missles: []
+	asteroids: []
+	score: 0
+	highscore: 0
+	canMissle: true
+	keys:
+		left: false
+		right: false
+		up: false
+		down: false
+		space: false
+
+	init: =>
+		@.makeElements()
+		@.addListeners()
+		@.render()
+		@.points(0)
+
+	makeElements: ->
+		@.stage = document.getElementsByClassName("game")[0]
+
+		@.scoreEl = document.createElement "h1"
+		@.highscoreEl = document.createElement "h1"
+
+		@.scoreEl.setAttribute "class" , "left score"
+		@.highscoreEl.setAttribute "class" , "right score"
+
+		@.stage.appendChild @.scoreEl
+		@.stage.appendChild @.highscoreEl
+
+		@.player = document.createElement "div"
+		@.player.setAttribute "class" , "player"
+		@.stage.appendChild @.player
+		@.player.m =
+			pref:
+				a: 0.075
+				s: 0.7
+				m: 0.1
+
+			pos:
+				scale: 10
+				x: 0
+				y: 0
+				a: 0
+
+			vel:
+				x: 0
+				y: 0
+				a: 0
+
+	addListeners: ->
+		window.addEventListener "keydown" , (e) =>
+			switch e.keyCode
+				when 38
+					@.keys.up = true
+
+				when 40
+					@.keys.down = true
+
+				when 37
+					@.keys.left = true
+
+				when 39
+					@.keys.right = true
+
+				when 32
+					@.keys.space = true
+
+		window.addEventListener "keyup" , (e) =>
+			switch e.keyCode
+				when 38
+					@.keys.up = false
+
+				when 40
+					@.keys.down = false
+
+				when 37
+					@.keys.left = false
+
+				when 39
+					@.keys.right = false
+
+				when 32
+					@.keys.space = false
+          
+	keyEvents: ->
+		if @.keys.up is true
+			angleX = Math.cos(( @.player.m.pos.a - 90 ) * ( Math.PI / 180 ))
+			angleY = Math.sin(( @.player.m.pos.a - 90 ) * ( Math.PI / 180 ))
+			@.player.m.vel.x += angleX * @.player.m.pref.a
+			@.player.m.vel.y += angleY * @.player.m.pref.a
+			@.explosion( @.player.m.pos.x + angleX * -14 , @.player.m.pos.y + angleY * -14 , 5 , 6 + Math.round( 12 * Math.random()) )
+
+		if @.keys.down is true
+			angleX = Math.cos(( @.player.m.pos.a - 90 ) * ( Math.PI / 180 ))
+			angleY = Math.sin(( @.player.m.pos.a - 90 ) * ( Math.PI / 180 ))
+			@.player.m.vel.x -= angleX * @.player.m.pref.a
+			@.player.m.vel.y -= angleY * @.player.m.pref.a
+			@.explosion( @.player.m.pos.x + angleX * 1 , @.player.m.pos.y + angleY * 1 , 5 , 6 + Math.round( 12 * Math.random()) )
+
+		if @.keys.left is true
+			@.player.m.vel.a -= @.player.m.pref.s
+
+		if @.keys.right is true
+			@.player.m.vel.a += @.player.m.pref.s
+
+		if @.keys.space is true
+			@.missle( @.player.m.pos )
+    
+
+	missle: ( v ) ->
+		if @.canMissle is true
+			@.canMissle = false
+			setTimeout =>
+				@.canMissle = true
+			, @.player.m.pref.m * 1000
+			missle = document.createElement "div"
+			missle.setAttribute "class" , "missle"
+			missle.pos =
+				x: parseInt v.x
+				y: parseInt v.y
+				a: parseInt v.a
+				scale: 4
+				speed: 12
+
+			missle.death = setTimeout =>
+				missle.parentNode.removeChild missle
+				@.missles.splice( 0 , 1 )
+			, 3000
+
+			@.stage.appendChild missle
+			@.missles.push( missle )
+
+			if @.missles.length > 12
+				clearTimeout @.missles[0].death
+				@.missles[0].parentNode.removeChild @.missles[0]
+				@.missles.splice( 0 , 1 )
+
+	explosion: ( x , y , s , i ) ->
+
+		n = 0
+		while n < i
+			setTimeout =>
+				@.explosion( x , y , s )
+			, 30 + n * 30
+			n++
+
+		x += Math.round(( Math.random() - 0.5 ) * s )
+		y += Math.round(( Math.random() - 0.5 ) * s )
+
+		beeeen = document.createElement "div"
+		beeeen.setAttribute "class" , "explosion"
+		beeeen.style.marginTop = "#{y}px"
+		beeeen.style.marginLeft = "#{x}px"
+		beeeen.style.width = beeeen.style.height = "#{s}px"
+		@.stage.appendChild beeeen
+
+		setTimeout =>
+			beeeen.parentNode.removeChild beeeen
+		, 500
+
+	asteroid: ( x , y , type ) ->
+		asteroid = document.createElement "div"
+		types = [ "a" , "b" , "c" ]
+		size = [ 80 , 40 , 25 ]
+		if type is undefined then type = Math.floor( Math.random() * types.length )
+
+		asteroid.setAttribute "class" , "asteroid type-#{types[type]}"
+		
+		if x is undefined or y is undefined
+			if Math.random() > 0.5
+				if Math.random() > 0.5
+					x = -window.innerWidth / 2 - 40
+				else
+					x = window.innerWidth / 2 + 40
+
+				y = Math.random() * window.innerHeight
+
+			else
+				if Math.random() > 0.5
+					y = -window.innerHeight / 2 - 40
+				else
+					y = window.innerHeight / 2 + 40
+
+				x = Math.random() * window.innerWidth
+
+		asteroid.pos =
+			x: x
+			y: y
+			aInit: Math.random() * 360
+			a: Math.random() * 360
+			s: ( Math.random() - 0.5 ) * 2
+			speed: Math.min( 0.5 + Math.random() * 2 + (( Math.random() * @.score ) / 2000 ) , 5 )
+			health: ( 3 - type ) * 2
+			scale: size[ type ]
+
+		@.stage.appendChild asteroid
+		@.asteroids.push( asteroid )
+
+
+	update: ->
+		@.player.m.pos.x += @.player.m.vel.x
+		@.player.m.pos.y += @.player.m.vel.y
+		@.player.m.pos.a += @.player.m.vel.a
+
+		if Math.abs( @.player.m.vel.a ) < 0.1
+			@.player.m.vel.a = 0
+		else
+			@.player.m.vel.a = @.player.m.vel.a / 1.1
+
+		@.player.m.pos = @.loop( @.player.m.pos )
+
+		i = 0
+		while i < @.missles.length
+			if @.missles[i] isnt undefined
+				@.missles[i].pos.x += Math.cos(( @.missles[i].pos.a - 90 ) * ( Math.PI / 180 )) * @.missles[i].pos.speed
+				@.missles[i].pos.y += Math.sin(( @.missles[i].pos.a - 90 ) * ( Math.PI / 180 )) * @.missles[i].pos.speed
+				# @.missles[i].pos = @.loop( @.missles[i].pos )
+				if Math.random() > 0.5 then @.explosion( @.missles[i].pos.x , @.missles[i].pos.y , 3 + Math.random() * 2 )
+			i++	
+
+		i = 0
+		while i < @.asteroids.length
+			if @.asteroids[i] isnt undefined
+				@.asteroids[i].pos.x += Math.cos(( @.asteroids[i].pos.aInit - 90 ) * ( Math.PI / 180 )) * @.asteroids[i].pos.speed
+				@.asteroids[i].pos.y += Math.sin(( @.asteroids[i].pos.aInit - 90 ) * ( Math.PI / 180 )) * @.asteroids[i].pos.speed
+				@.asteroids[i].pos.a += @.asteroids[i].pos.s
+				@.asteroids[i].pos = @.loop( @.asteroids[i].pos )
+
+			n = 0
+			while n < @.missles.length
+				if @.collision( @.missles[n].pos , @.asteroids[i].pos )
+					@.asteroids[i].pos.health--
+					@.explosion( @.missles[n].pos.x , @.missles[n].pos.y , 15 )
+					@.missles[n].pos.y = 1000000
+					@.points( 10 )
+				n++
+
+			if @.collision( @.player.m.pos , @.asteroids[i].pos ) then @.killPlayer()
+
+			if @.asteroids[i].pos.health < 0
+				@.explosion( @.asteroids[i].pos.x , @.asteroids[i].pos.y , 25 , 8 )
+				switch @.asteroids[i].pos.scale
+					when 80 
+						@.asteroid( parseInt( @.asteroids[i].pos.x ) , parseInt( @.asteroids[i].pos.y ) , 1 )
+						@.asteroid( parseInt( @.asteroids[i].pos.x ) , parseInt( @.asteroids[i].pos.y ) , 1 )
+						@.points( 500 )
+
+					when 40 
+						@.asteroid( parseInt( @.asteroids[i].pos.x ) , parseInt( @.asteroids[i].pos.y ) , 2 )
+						@.asteroid( parseInt( @.asteroids[i].pos.x ) , parseInt( @.asteroids[i].pos.y ) , 2 )
+						@.asteroid( parseInt( @.asteroids[i].pos.x ) , parseInt( @.asteroids[i].pos.y ) , 2 )
+						@.points( 250 )
+
+					else
+						@.points( 100 )
+
+				@.asteroids[i].parentNode.removeChild @.asteroids[i]
+				@.asteroids.splice( i , 1 )
+
+			i++
+
+	killPlayer: ->
+		if @.invincible is false or @.invincible is undefined
+			@.explosion( @.player.m.pos.x , @.player.m.pos.y , 50 , 4 )
+			@.player.m.pos.x = 0
+			@.player.m.pos.y = 0
+			@.player.m.vel.x = 0
+			@.player.m.vel.y = 0
+			@.invincible = true
+			@.points( 0 , true )
+			setTimeout =>
+				@.invincible = false
+			, 3000
+
+
+	render: =>
+		@.update()
+		@.keyEvents()
+		@.player.setAttribute( "style" ,  @.pos( @.player.m.pos ))
+
+		i = 0
+		while i < @.missles.length
+			@.missles[i].setAttribute( "style" ,  @.pos( @.missles[i].pos ))
+			i++
+
+		i = 0
+		while i < @.asteroids.length
+			@.asteroids[i].setAttribute( "style" ,  @.pos( @.asteroids[i].pos ))
+			i++
+
+		if @.asteroids.length < 5
+			n = 1 + Math.floor( Math.random() * 4 )
+			while n > 0
+				@.asteroid()
+				n--
+
+		requestAnimationFrame( @.render )
+
+	points: ( add , reset ) ->
+		if reset is undefined
+			@.score += add
+			@.highscore = Math.max( @.score , @.highscore )
+		else
+			@.score = 0
+
+		@.scoreEl.innerHTML = @.score
+		@.highscoreEl.innerHTML = @.highscore
+
+
+	collision: ( one , two ) ->
+		xc = false
+		yc = false
+		if Math.abs( one.x - two.x ) < ( 0.75 * ( one.scale + two.scale )) then xc = true
+		if Math.abs( one.y - two.y ) < ( 0.75 * ( one.scale + two.scale )) then yc = true
+		if xc is yc is true then return true else return false
+
+
+	loop: ( v ) ->
+		buffer = 30
+
+		if v.x > window.innerWidth / 2 + buffer then v.x = -window.innerWidth / 2 - ( buffer / 2 )
+		if v.x < -window.innerWidth / 2 - buffer then v.x = window.innerWidth / 2 + ( buffer / 2 )
+
+		if v.y > window.innerHeight / 2 + buffer then v.y = -window.innerHeight / 2 - ( buffer / 2 )
+		if v.y < -window.innerHeight / 2 - buffer then v.y = window.innerHeight / 2 + ( buffer / 2 )
+
+		return v
+
+	pos: ( v ) ->
+		s =  "opacity: 1;"
+		s += "-webkit-transform: translate(#{Math.round(v.x)}px,#{Math.round(v.y)}px) rotate(#{Math.round(v.a)}deg) ; "
+		s += "-moz-transform: translate(#{Math.round(v.x)}px,#{Math.round(v.y)}px) rotate(#{Math.round(v.a)}deg) ; "
+		s += "-ms-transform: translate(#{Math.round(v.x)}px,#{Math.round(v.y)}px) rotate(#{Math.round(v.a)}deg) ; "
+		s += "-o-transform: translate(#{Math.round(v.x)}px,#{Math.round(v.y)}px) rotate(#{Math.round(v.a)}deg) ; "
+		s += "transform: translate(#{Math.round(v.x)}px,#{Math.round(v.y)}px) rotate(#{Math.round(v.a)}deg) ;"
+		return s
+
+game = new AsteroidsView
+game.init()
