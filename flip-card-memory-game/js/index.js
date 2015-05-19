@@ -66,12 +66,14 @@ $(function(){
         if(text == 'nice'){
             increase('flip_won');
             decrease('flip_abandoned');
+            playAudio();
         }
 
         // If lost game
         else if(text == 'fail'){
             increase('flip_lost');
             decrease('flip_abandoned');
+            playAudio();
         }
 
         // Update stats
@@ -107,7 +109,7 @@ $(function(){
             $('.logo .card').last().addClass('active'); 
         }
     });
-
+    playAudio();
     // Start game
     $('.play').on('click', function(){
         increase('flip_abandoned');
@@ -121,10 +123,12 @@ $(function(){
 
         // start the actual game
         $('.logo').fadeOut(250, playGame(numberUniqueCards));
+
     });
 
     function playGame(numberUniqueCards) {
         var startTime  = $.now();
+        pauseAudio();
         
         // and add it to the board
         var shuffledCardSet = getRandomShuffledSet(numberUniqueCards);
@@ -248,6 +252,7 @@ $(function(){
             startScreen('nice');
         }
         // SOMETHING HERE GAME END (MUSIC ETC)
+        playAudio();
     }
 
     function checkForMatchingCards(cardValue, startTime) {
@@ -305,5 +310,16 @@ $(function(){
                 $(window).off();
             }
         });
+    }
+
+
+    function playAudio () {
+        document.getElementById('gameAudio').play();
+        //song.play();
+    }
+
+    function pauseAudio() {
+        document.getElementById('gameAudio').pause();
+       // song.pause();
     }
 });
