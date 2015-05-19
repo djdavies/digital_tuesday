@@ -176,7 +176,8 @@ $(function(){
                     // set this card to be active
                     thisCard.addClass('active');
                     
-                    checkForMatchingCards(thisCard);
+                    var cardValue = thisCard.find('.b').attr('data-f');
+                    checkForMatchingCards(cardValue);
                 }
             });
 
@@ -237,11 +238,10 @@ $(function(){
         }
     }
 
-    function checkForMatchingCards(card) {
-        var data = card.find('.b').attr('data-f');
+    function checkForMatchingCards(cardValue) {
         // get collection of all cards with the matching pattern 
         // (e.g. A and A)
-        var selectedCards = $('#game .active .b[data-f='+data+']');
+        var selectedCards = $('#game .active .b[data-f='+cardValue+']');
 
         if( $('#game').find('.card.active').length > 1){
             setTimeout(function(){
