@@ -4,6 +4,9 @@
 
 (function(window){
 
+playerShoot = new Audio("audio/191594__fins__laser.wav");
+musicPlayer = document.getElementById("hidden-music-player");
+
 var Game = {
 	// Initialise everything we need to use.
 	init: function(){
@@ -59,14 +62,21 @@ var Game = {
 	clicked: function(){
 		if(!Game.paused) {
 			Game.pause();
+                                // Pause background music.  
+                                musicPlayer.pause();
 		} else {
 			if(Game.isGameOver){
 				Game.init();
+                                            musicPlayer.play();
+                                            musicPlayer.currentTime=0;
 			} else {
+                                            // Unpause background music.
+                                            musicPlayer.play();
 				Game.unPause();
 				Game.loop();
 				Game.invincibleMode(1000);
 			}
+			// TODO: pause music as well.
 		}
 	},
 
@@ -76,7 +86,8 @@ var Game = {
 	// Binding the shooting button (if user is not in invincible mode.)
 	// 17 = l.ctrl, 32 = spacebar.
 	keyPressed: function(e){
-		if(e.keyCode === 17 || e.keyCode === 32 ){
+		if(e.keyCode === 32 ){
+			playerShoot.currentTime=0;
 			if(!Game.player.invincible  && !Game.oneShot){
 				Game.player.shoot();
 				Game.oneShot = true;
@@ -84,35 +95,37 @@ var Game = {
 			if(Game.isGameOver){
 				Game.init();
 			}
-      e.preventDefault();
+        e.preventDefault();
 		}
 	},
 
 	// When you "lift" the button up, stop shooting.. 
 	buttonUp: function(e){
-		if(e.keyCode === 17 || e.keyCode === 32 ){
+		if(e.keyCode === 32 ){
 			Game.shooting = false;
 			Game.oneShot = false;
         e.preventDefault();
 		}
+
 		//... but keep moving.
-		if(e.keyCode === 37 || e.keyCode === 65){
+		if(e.keyCode === 37 ){
 			Game.player.movingLeft = false;
 		}
-		if(e.keyCode === 39 || e.keyCode === 68){
+
+		if(e.keyCode === 39 ){
 			Game.player.movingRight = false;
 		}
 	},
 
 	// When you press the button down, start shootan'.
 	buttonDown: function(e){
-		if(e.keyCode === 17 || e.keyCode === 32 ){
+		if( e.keyCode === 32 ){
 			Game.shooting = true;
 		}
-		if(e.keyCode === 37 || e.keyCode === 65){
+		if(e.keyCode === 37 ){
 			Game.player.movingLeft = true;
 		}
-		if(e.keyCode === 39 || e.keyCode === 68){
+		if(e.keyCode === 39 ){
 			Game.player.movingRight = true;
 		}
 	},
@@ -158,6 +171,8 @@ var Game = {
   // Game over function...
   // Looks messy because of how the text is displayed.
   gameOver: function(){
+            // Reset background music.
+            musicPlayer.pause();
   	this.isGameOver = true;
   	this.clear();
   	var message = "Game Over";
@@ -229,7 +244,7 @@ var Game = {
 };
 
 
-
+// ===== PLAYER STUFF =====
 
 
 // Initialises the player.
@@ -287,6 +302,8 @@ Player.prototype.update = function(){
 Player.prototype.shoot = function(){
 	Game.bullets[Game.bulletIndex] = new Bullet(this.x + this.width/2);
 	Game.bulletIndex++;
+            playerShoot.play();
+            playerShoot.currentTime=0;
 };
 
 
@@ -306,6 +323,7 @@ var Bullet = function(x){
 	
 };
 
+
 // Draws the bullet.
 Bullet.prototype.draw = function(){
 	Game.ctx.fillStyle = this.color;
@@ -319,8 +337,6 @@ Bullet.prototype.update = function(){
 		delete Game.bullets[this.index];
 	}
 };
-
-
 
 
 
