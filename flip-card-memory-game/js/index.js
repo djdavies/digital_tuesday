@@ -127,7 +127,7 @@ $(function(){
         var startTime  = $.now();
         
         // and add it to the board
-        var shuffledCardSet = setShuffledCards(numberUniqueCards);
+        var shuffledCardSet = getRandomShuffledSet(numberUniqueCards);
 
         addCardsToGameCanvas(shuffledCardSet);
 
@@ -194,7 +194,7 @@ $(function(){
         return timeLimit;
     }
 
-    function setShuffledCards(numberUniqueCards) {
+    function getRandomShuffledSet(numberUniqueCards) {
         cardSet = [];
         // Create and add shuffled cards to game
         for (i = 0; i < numberUniqueCards; i++) { 
@@ -223,7 +223,7 @@ $(function(){
                     +'<div class="f"></div>'
                     +'<div class="b" data-f="&#xf0'+currentCardValue+';"></div>' 
                 +'</div></div>'
-            ).appendTo('#game');             
+            ).appendTo('#game');
         }
     }
 
@@ -247,6 +247,7 @@ $(function(){
             }
             startScreen('nice');
         }
+        // SOMETHING HERE GAME END (MUSIC ETC)
     }
 
     function checkForMatchingCards(cardValue, startTime) {
