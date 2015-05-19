@@ -5,7 +5,7 @@
 (function(window){
 
 var Game = {
-
+	// Initialise everything we need to use.
 	init: function(){
 		this.c = document.getElementById("game");
 		this.c.width = this.c.width;
@@ -33,16 +33,21 @@ var Game = {
 		this.shooting = false;
 		this.oneShot = false;
 		this.isGameOver = false;
+		// Requests animation frames for multiple browser rendering engines.
      this.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
+		// Add enemies into the game (maxEnemies=6).
 		for(var i = 0; i<this.maxEnemies; i++){
 			new Enemy();
 			this.enemiesAlive++;
 		}
+		// The 2 seconds at the start of the game -- user cannot be killed.
 		this.invincibleMode(2000);
 
+		// Runs the game in a loop until a break clause.
 		this.loop();
 	},
 
+	// EventListeners for the "super" keypresses.
 	binding: function(){
 		window.addEventListener("keydown", this.buttonDown);
 		window.addEventListener("keyup", this.buttonUp);
@@ -50,6 +55,7 @@ var Game = {
 		this.c.addEventListener("click", this.clicked);
 	},
 
+	// Ability to pause the game.  Also determines if game over and if user has unpaused.
 	clicked: function(){
 		if(!Game.paused) {
 			Game.pause();
@@ -64,8 +70,13 @@ var Game = {
 		}
 	},
 
+	// keyPressed vs buttonUp vs buttonDown?
+	// see: http://stackoverflow.com/questions/3396754/onkeypress-vs-onkeyup-and-onkeydown
+
+	// Binding the shooting button (if user is not in invincible mode.)
+	// 17 = l.ctrl, 32 = spacebar.
 	keyPressed: function(e){
-		if(e.keyCode === 32){
+		if(e.keyCode === 17){
 			if(!Game.player.invincible  && !Game.oneShot){
 				Game.player.shoot();
 				Game.oneShot = true;
@@ -77,12 +88,14 @@ var Game = {
 		}
 	},
 
+	// When you "lift" the button up, stop shooting.. 
 	buttonUp: function(e){
-		if(e.keyCode === 32){
+		if(e.keyCode === 17){
 			Game.shooting = false;
 			Game.oneShot = false;
         e.preventDefault();
 		}
+		//... but keep moving.
 		if(e.keyCode === 37 || e.keyCode === 65){
 			Game.player.movingLeft = false;
 		}
@@ -91,8 +104,9 @@ var Game = {
 		}
 	},
 
+	// When you press the button down, start shootan'.
 	buttonDown: function(e){
-		if(e.keyCode === 32){
+		if(e.keyCode === 17){
 			Game.shooting = true;
 		}
 		if(e.keyCode === 37 || e.keyCode === 65){
@@ -107,6 +121,7 @@ var Game = {
     return Math.floor(Math.random() * (max - min) + min);
   },
 
+  // First 2 seconds of the game, you're invincible.
   invincibleMode: function(s){
   	this.player.invincible = true;
   	setTimeout(function(){
@@ -114,6 +129,7 @@ var Game = {
   	}, s);
   },
 
+  // Collision detection?
   collision: function(a, b){
 		return !(
 	    ((a.y + a.height) < (b.y)) ||
@@ -123,11 +139,14 @@ var Game = {
 		)
 	},
 
+	// Clears the screen of enemies by filling the screen with a colour?
   clear: function(){
   	this.ctx.fillStyle = Game.color;
   	this.ctx.fillRect(0, 0, this.c.width, this.c.height);
   },
    
+  // User clicks to pause. 
+  //  Bools for the pause feature... 
   pause: function(){
 		this.paused = true;
   },
@@ -136,7 +155,8 @@ var Game = {
 		this.paused = false;
   },
 
-
+  // Game over function...
+  // Looks messy because of how the text is displayed.
   gameOver: function(){
   	this.isGameOver = true;
   	this.clear();
@@ -152,6 +172,7 @@ var Game = {
 	  this.ctx.fillText(message3, this.c.width/2 - this.ctx.measureText(message3).width/2, this.c.height/2 + 30);
   },
 
+  // Displays score and lives.  Integers represent positioning of the text.
   updateScore: function(){
   	this.ctx.fillStyle = "white";
   	this.ctx.font = "16px Lato, sans-serif";
@@ -159,25 +180,32 @@ var Game = {
   	this.ctx.fillText("Lives: " + (this.maxLives - this.life), 8, 40);
   },
   
+  	// The main game loop.
 	loop: function(){
+		// If the game isn't paused, let's go...
 		if(!Game.paused){
 			Game.clear();
 			for(var i in Game.enemies){
 				var currentEnemy = Game.enemies[i];
 				currentEnemy.draw();
 				currentEnemy.update();
+				// Makes the enemies shoot?
 				if(Game.currentFrame % currentEnemy.shootingSpeed === 0){
 					currentEnemy.shoot();
 				}
 			}
+			// Draws the enemy bullets.
 			for(var x in Game.enemyBullets){
 				Game.enemyBullets[x].draw();
 				Game.enemyBullets[x].update();
 			}
+			// The user's ship bullets?
 			for(var z in Game.bullets){
 				Game.bullets[z].draw();
 				Game.bullets[z].update();
 			}
+
+			// Draws the player on the screen?
 			if(Game.player.invincible){
 				if(Game.currentFrame % 20 === 0){
 					Game.player.draw();
@@ -186,6 +214,8 @@ var Game = {
 				Game.player.draw();
 			}
 
+		// "Particicles are enemies exploding" -- Luke.
+		// Draws 'em, and uses the number of particles to update player score.
 	    for(var i in Game.particles){
 	      Game.particles[i].draw();
 	    }
@@ -201,7 +231,7 @@ var Game = {
 
 
 
-
+// Initialises the player.
 var Player = function(){
 	this.width = 60;
 	this.height = 20;
@@ -214,7 +244,7 @@ var Player = function(){
 	this.color = "white";
 };
 
-
+//  Determines whether you've died with no lives left.
 Player.prototype.die = function(){
 	if(Game.life < Game.maxLives){
 		Game.invincibleMode(2000);  
@@ -225,13 +255,13 @@ Player.prototype.die = function(){
 	}
 };
 
-
+// Draws the player.
 Player.prototype.draw = function(){
 	Game.ctx.fillStyle = this.color;
 	Game.ctx.fillRect(this.x, this.y, this.width, this.height);
 };
 
-
+// Updates player position in regards to where player has moved.
 Player.prototype.update = function(){
 	if(this.movingLeft && this.x > 0){
 		this.x -= this.speed;
@@ -242,6 +272,7 @@ Player.prototype.update = function(){
 	if(Game.shooting && Game.currentFrame % 10 === 0){
 		this.shoot();
 	}
+	// Determines whether enemyBullets hit the player?
 	for(var i in Game.enemyBullets){
 		var currentBullet = Game.enemyBullets[i];
 		if(Game.collision(currentBullet, this) && !Game.player.invincible){
@@ -251,7 +282,7 @@ Player.prototype.update = function(){
 	}
 };
 
-
+// Intitialises player bullets, bound to shooting.
 Player.prototype.shoot = function(){
 	Game.bullets[Game.bulletIndex] = new Bullet(this.x + this.width/2);
 	Game.bulletIndex++;
@@ -261,7 +292,7 @@ Player.prototype.shoot = function(){
 
 
 
-
+// The player's bullet.
 var Bullet = function(x){  
 	this.width = 8;
 	this.height = 20;
@@ -274,13 +305,13 @@ var Bullet = function(x){
 	
 };
 
-
+// Draws the bullet.
 Bullet.prototype.draw = function(){
 	Game.ctx.fillStyle = this.color;
 	Game.ctx.fillRect(this.x, this.y, this.width, this.height);
 };
 
-
+// Not sure...
 Bullet.prototype.update = function(){
 	this.y -= this.vy;
 	if(this.y < 0){
@@ -292,7 +323,7 @@ Bullet.prototype.update = function(){
 
 
 
-
+// Initialises the enemy/enemies (they're all the same).
 var Enemy = function(){
 	this.width = 60;
 	this.height = 20;
@@ -309,13 +340,13 @@ var Enemy = function(){
 	
 };
 
-
+// Draws the enemy.
 Enemy.prototype.draw = function(){
 	Game.ctx.fillStyle = this.color;
 	Game.ctx.fillRect(this.x, this.y, this.width, this.height);
 };
 
-
+// Not sure.
 Enemy.prototype.update = function(){
 	if(this.movingLeft){
 		if(this.x > 0){
@@ -333,6 +364,7 @@ Enemy.prototype.update = function(){
 		}
 	}
 	
+	// Determines whether a bullet hits the player?
 	for(var i in Game.bullets){
 		var currentBullet = Game.bullets[i];
 		if(Game.collision(currentBullet, this)){
@@ -342,6 +374,7 @@ Enemy.prototype.update = function(){
 	} 
 };
 
+// Deletes the enemies if the player has hit them, updates player score.
 Enemy.prototype.die = function(){
   this.explode();
   delete Game.enemies[this.index];
@@ -356,16 +389,19 @@ Enemy.prototype.die = function(){
   
 };
 
+// Exploding uses 'Particles', a little explosion animation.
 Enemy.prototype.explode = function(){
 	for(var i=0; i<Game.maxParticles; i++){
     new Particle(this.x + this.width/2, this.y, this.color);
   }
 };
 
+// Create a new enemy bullet on the enemy shoot function.
 Enemy.prototype.shoot = function(){
 	new EnemyBullet(this.x + this.width/2, this.y, this.color);
 };
 
+// Initialises enemy bullet properties.
 var EnemyBullet = function(x, y, color){
 	this.width = 8;
 	this.height = 20;
@@ -378,11 +414,13 @@ var EnemyBullet = function(x, y, color){
 	Game.enemyBulletIndex++;
 };
 
+// Draws the enemy bullets.
 EnemyBullet.prototype.draw = function(){
 	Game.ctx.fillStyle = this.color;
 	Game.ctx.fillRect(this.x, this.y, this.width, this.height);
 };
 
+// Determines where the bullets move/travel to?
 EnemyBullet.prototype.update = function(){
 	this.y += this.vy;
 	if(this.y > Game.c.height){
@@ -392,7 +430,7 @@ EnemyBullet.prototype.update = function(){
 
 
 
-
+// Initialises the particle/(explosion) properties.
 var Particle = function(x, y, color){
     this.x = x;
     this.y = y;
@@ -408,6 +446,7 @@ var Particle = function(x, y, color){
     this.maxlife = 100;
   }
 
+  // Draws the particles.
   Particle.prototype.draw = function(){
     this.x += this.vx;
     this.y += this.vy;
@@ -421,6 +460,7 @@ var Particle = function(x, y, color){
     }
   };
 
+// Starts the game.
 Game.init();
 
 
