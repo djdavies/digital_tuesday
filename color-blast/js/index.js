@@ -76,7 +76,7 @@ var Game = {
 	// Binding the shooting button (if user is not in invincible mode.)
 	// 17 = l.ctrl, 32 = spacebar.
 	keyPressed: function(e){
-		if(e.keyCode === 17){
+		if(e.keyCode === 17 || e.keyCode === 32 ){
 			if(!Game.player.invincible  && !Game.oneShot){
 				Game.player.shoot();
 				Game.oneShot = true;
@@ -90,7 +90,7 @@ var Game = {
 
 	// When you "lift" the button up, stop shooting.. 
 	buttonUp: function(e){
-		if(e.keyCode === 17){
+		if(e.keyCode === 17 || e.keyCode === 32 ){
 			Game.shooting = false;
 			Game.oneShot = false;
         e.preventDefault();
@@ -106,7 +106,7 @@ var Game = {
 
 	// When you press the button down, start shootan'.
 	buttonDown: function(e){
-		if(e.keyCode === 17){
+		if(e.keyCode === 17 || e.keyCode === 32 ){
 			Game.shooting = true;
 		}
 		if(e.keyCode === 37 || e.keyCode === 65){
@@ -213,6 +213,7 @@ var Game = {
 			} else {
 				Game.player.draw();
 			}
+
 
 		// "Particicles are enemies exploding" -- Luke.
 		// Draws 'em, and uses the number of particles to update player score.
@@ -346,7 +347,7 @@ Enemy.prototype.draw = function(){
 	Game.ctx.fillRect(this.x, this.y, this.width, this.height);
 };
 
-// Not sure.
+// Update the x and y coordinates 
 Enemy.prototype.update = function(){
 	if(this.movingLeft){
 		if(this.x > 0){
