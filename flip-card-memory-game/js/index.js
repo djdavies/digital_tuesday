@@ -54,7 +54,7 @@ $(function(){
     };
 
     function startScreen(text){
-        $('#g').removeAttr('class').empty();
+        $('#game').removeAttr('class').empty();
         $('.logo').fadeIn(250);
 
         $('.c1').text(text.substring(0, 1));
@@ -113,8 +113,8 @@ $(function(){
         increase('flip_abandoned');
 
         var difficulty = '',
-        timer      = 1000,
-        level      = $(this).data('level');
+        timer = 1000,
+        level = $(this).data('level');
 
         // Set game timer and difficulty   
         if (level ==  8) { 
@@ -128,7 +128,7 @@ $(function(){
             timer *= level * 6; 
         }	    
 
-        $('#g').addClass(difficulty);
+        $('#game').addClass(difficulty);
 
         $('.logo').fadeOut(250, function(){
             var startGame  = $.now(),
@@ -139,53 +139,55 @@ $(function(){
                 obj.push(i); 
             }
 
-            var shu = shuffle( $.merge(obj, obj) ),
-            cardSize = 100/Math.sqrt(shu.length);
+            var shuffledCards = shuffle( $.merge(obj,obj) );
+            cardSize = 100/Math.sqrt(shuffledCards.length);
 
-            for(i = 0; i < shu.length; i++){
+            for(i = 0; i < shuffledCards.length; i++){
                 //Get the current card
-                var code = shu[i];
-                if(code < 10) { 
-                    code = "0" + code;
+                //TODO find out what setting the current card does
+                var currentCardValue = shuffledCards[i];
+                switch( currentCardValue ) {
+                    case ( currentCardValue < 10 ):
+                        currentCardValue = "0" + currentCardValue;
+                        break;
+                    case ( currentCardValue == 30 ):
+                        currentCardValue = 10;
+                        break;
+                    case ( currentCardValue == 31 ):
+                        currentCardValue = 21;
+                        break;
                 }
-                if(code == 30) { 
-                    code = 10;
-                }
-                if(code == 31) { 
-                    code = 21;
-                }
-                //Add card to the game's canvas/screen
-                $('<div class="card" style="width:'+cardSize+'%;height:'+cardSize+'%;">'+
-                    '<div class="flipper"><div class="f"></div><div class="b" data-f="&#xf0'+code+';"></div></div>'+
-                    '</div>').appendTo('#g');
+
+                //Add the card to the game's canvas/screen
+                addCardToGameCanvas(cardSize, currentCardValue);                
             }
 
-            // Set card actions
-            $('#g .card').on({
+            // Set the card actions
+            $('#game .card').on({
                 'mousedown' : function(){
-                    if($('#g').attr('data-paused') == 1) {
+
+                    // if game paused do nothing
+                    if($('#game').attr('data-paused') == 1) {
                         return;
                     }
+
                     var data = $(this).addClass('active').find('.b').attr('data-f');
 
-                    if( $('#g').find('.card.active').length > 1){
+                    if( $('#game').find('.card.active').length > 1){
                         setTimeout(function(){
-                            var thisCard = $('#g .active .b[data-f='+data+']');
+                            // a collection of all cards with the matching pattern (e.g. A and A)
+                            var selectedCards = $('#game .active .b[data-f='+data+']');
+                            console.log("selectedCards = " + selectedCards);
 
-                            if( thisCard.length > 1 ) {
-                                thisCard.parents('.card').toggleClass('active card found').empty(); //yey
+                            if( selectedCards.length > 1 ) {
+                                // we know the cards match
+                                selectedCards.parents('.card').toggleClass('active card found').empty();
                                 increase('flip_matched');
 
-                                // Win game
-                                if( !$('#g .card').length ){
-                                    var time = $.now() - startGame;
-                                    if( get('flip_'+difficulty) == '-:-' || get('flip_'+difficulty) > time ){
-                                        set('flip_'+difficulty, time); // increase best score
-                                    }
-                                    startScreen('nice');
-                                }
+                                // if we know there are no more cards left to match in the game, end the game.
+                                checkGameEnded(difficulty, startGame);
                             } else {
-                                $('#g .card.active').removeClass('active'); // fail
+                                $('#game .card.active').removeClass('active'); // fail
                                 increase('flip_wrong');
                             }
                         }, 401);
@@ -194,7 +196,7 @@ $(function(){
             });
 
             // Add timer bar
-            $('<i class="timer"></i>').prependTo('#g')
+            $('<i class="timer"></i>').prependTo('#game')
                 .css({
                     'animation' : 'timer '+timer+'ms linear'
                 })
@@ -206,12 +208,12 @@ $(function(){
             $(window).off().on('keyup', function(e){
                 // Pause game. (p)
                 if(e.keyCode == 80){
-                    if( $('#g').attr('data-paused') == 1 ) { //was paused, now resume
-                        $('#g').attr('data-paused', '0');
+                    if( $('#game').attr('data-paused') == 1 ) { //was paused, now resume
+                        $('#game').attr('data-paused', '0');
                         $('.timer').css('animation-play-state', 'running');
                         $('.pause').remove();
                     } else {
-                        $('#g').attr('data-paused', '1');
+                        $('#game').attr('data-paused', '1');
                         $('.timer').css('animation-play-state', 'paused');
                         $('<div class="pause"></div>').appendTo('body');
                     }
@@ -220,8 +222,8 @@ $(function(){
                 if(e.keyCode == 27){
                     startScreen('flip');
                     // If game was paused
-                    if( $('#g').attr('data-paused') == 1 ){
-                        $('#g').attr('data-paused', '0');
+                    if( $('#game').attr('data-paused') == 1 ){
+                        $('#game').attr('data-paused', '0');
                         $('.pause').remove();
                     }
                     $(window).off();
@@ -229,4 +231,24 @@ $(function(){
             });
         });
     });
+
+    function addCardToGameCanvas(cardSize, currentCardValue) {
+        $('<div class="card" style="width:'+cardSize+'%;height:'+cardSize+'%;">'
+            +'<div class="flipper">'
+                +'<div class="f"></div>'
+                +'<div class="b" data-f="&#xf0'+currentCardValue+';"></div>' 
+            +'</div></div>'
+        ).appendTo('#game');
+    }
+
+    function checkGameEnded(difficulty, startGame) {
+        // Win game
+        if( !$('#game .card').length ){
+            var time = $.now() - startGame;
+            if( get('flip_'+difficulty) == '-:-' || get('flip_'+difficulty) > time ){
+                set('flip_'+difficulty, time); // increase best score
+            }
+            startScreen('nice');
+        }
+    }
 });

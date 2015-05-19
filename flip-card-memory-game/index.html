@@ -19,7 +19,7 @@
 	-ms-user-select: none;
 	user-select: none;
 }
-body, html, .flipper, .f, .b, #g {width:100%;height:100%;}
+body, html, .flipper, .f, .b, #game {width:100%;height:100%;}
 
 /* font-face */
 @font-face{font-family: "GeneralFoundicons";font-weight:normal;font-style:normal;
@@ -27,7 +27,8 @@ body, html, .flipper, .f, .b, #g {width:100%;height:100%;}
 	src: url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/60583/general_foundicons.eot?#iefix") format("embedded-opentype"),
 	     url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/60583/general_foundicons.woff") format("woff"),
 	     url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/60583/general_foundicons.ttf") format("truetype"),
-	     url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/60583/general_foundicons.svg#GeneralFoundicons") format("svg");
+       url("https://s3-us-west-2.amazonaws.com/s.cdpn.io/60583/general_foundicons.svg#GeneralFoundicons") format("svg");
+
 }
 a{text-decoration:none;color:#fff;display:block;font:bold 18px/75px 'Open Sans';text-transform:uppercase;text-align:center;padding:0;margin:0 1px;}
 a:hover{color:#fff;background:rgba(255, 255, 255, .1)}
@@ -56,8 +57,8 @@ a:hover{color:#fff;background:rgba(255, 255, 255, .1)}
 .logo .info{font-size:11px;line-height:16px;text-align:center;color: rgba(255,255,255, .3);padding:0 25px;}
 
 /*GAME SCREEN*/
-#g{margin-top:4px}
-#g .timer{width:0%;height:5px;position:absolute;top:0;background:#C0392B;z-index:1}
+#game{margin-top:4px}
+#game .timer{width:0%;height:5px;position:absolute;top:0;background:#C0392B;z-index:1}
 @-webkit-keyframes timer {100% { width:100%; }}
 @-moz-keyframes timer {100% { width:100%; }}
 @-o-keyframes timer {100% { width:100%; }}
@@ -66,7 +67,7 @@ a:hover{color:#fff;background:rgba(255, 255, 255, .1)}
 .pause::before{content:'PAUSED';width:100%;position:absolute;margin-top:-100px;top:50%;background:#C0392B;color:#fff;font:bold 80px/200px 'Open Sans';
 display:block;text-align:center;}
 /* card styles */
-#g .found{display:inline-block}
+#game .found{display:inline-block}
 .card{display:inline-block;-webkit-perspective:1000;-moz-perspective:1000;}
 .card:not(.active):hover{opacity:.8}
 .card .b::before{content:attr(data-f);display:block;font:normal 100px/100px "GeneralFoundicons";
@@ -87,19 +88,19 @@ position:absolute;top:50%;margin-top:-50px;width:100%;text-align:center}
 /*Responsive Stuff*/
 @media all and (max-width: 1680px) and (min-width: 640px){
 	.card .b::before{font-size:90px}
-	#g.medium .card .b::before{font-size:70px}
-	#g.hard .card .b::before{font-size:50px}
+	#game.medium .card .b::before{font-size:70px}
+	#game.hard .card .b::before{font-size:50px}
 }
 @media all and (max-width: 640px) and (min-width: 470px){
 	.card .b::before{font-size:90px}
-	#g.medium .card .b::before{font-size:60px}
-	#g.hard .card .b::before{font-size:50px}
+	#game.medium .card .b::before{font-size:60px}
+	#game.hard .card .b::before{font-size:50px}
 }
 
 @media all and (max-width: 470px) and (min-width: 0px){
 	.card .b::before{font-size:60px}
-	#g.medium .card .b::before{font-size:35px;-webkit-text-stroke:0;}
-	#g.hard .card .b::before{font-size:32px;-webkit-text-stroke:0;}
+	#game.medium .card .b::before{font-size:35px;-webkit-text-stroke:0;}
+	#game.hard .card .b::before{font-size:32px;-webkit-text-stroke:0;}
 }
 
 @media all and (max-width: 640px) and (min-width: 0px){
@@ -146,7 +147,7 @@ Eliminate all cards as fast as you can to win the game. Have fun FLIPing!
 -->
 
 
-<div id="g"></div>
+<div id="game"></div>
 	
 <div class="logo">
   <p class="info">Click the P to get started.</p>
@@ -156,7 +157,7 @@ Eliminate all cards as fast as you can to win the game. Have fun FLIPing!
       <div class="b contentbox" id="stats">
         <div class="padded">
           <h2>Figures</h2>
-          Looks like you haven't FLIPped yet.
+          Looks like you haven't flipped yet.
           <a href="javascript:;" class="playnow">Play now</a>
         </div>
       </div>
