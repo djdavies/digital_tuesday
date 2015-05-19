@@ -4,6 +4,8 @@
 
 (function(window){
 
+playerShoot = new Audio("audio/191594__fins__laser.wav");
+
 var Game = {
 	// Initialise everything we need to use.
 	init: function(){
@@ -67,6 +69,7 @@ var Game = {
 				Game.loop();
 				Game.invincibleMode(1000);
 			}
+			// TODO: pause music as well.
 		}
 	},
 
@@ -77,6 +80,8 @@ var Game = {
 	// 17 = l.ctrl, 32 = spacebar.
 	keyPressed: function(e){
 		if(e.keyCode === 17 || e.keyCode === 32 ){
+			playerShoot.play();
+			playerShoot.currentTime=0;
 			if(!Game.player.invincible  && !Game.oneShot){
 				Game.player.shoot();
 				Game.oneShot = true;
@@ -95,12 +100,24 @@ var Game = {
 			Game.oneShot = false;
         e.preventDefault();
 		}
+
 		//... but keep moving.
 		if(e.keyCode === 37 || e.keyCode === 65){
 			Game.player.movingLeft = false;
 		}
+		// so you keep spamming shootan' when moving LEFT.
+		if(e.keyCode === 37 && 17 || e.keyCode === 65 && 17) {
+			playerShoot.play();
+			playerShoot.currentTime=0;
+		}
+
 		if(e.keyCode === 39 || e.keyCode === 68){
 			Game.player.movingRight = false;
+		}
+		// so you keep spamming shootan' when moving RIGHT.
+		if(e.keyCode === 39 && 17 || e.keyCode === 68 && 17) {
+			playerShoot.play();
+			playerShoot.currentTime=0;
 		}
 	},
 
@@ -108,6 +125,8 @@ var Game = {
 	buttonDown: function(e){
 		if(e.keyCode === 17 || e.keyCode === 32 ){
 			Game.shooting = true;
+			playerShoot.play();
+			playerShoot.currentTime=0;
 		}
 		if(e.keyCode === 37 || e.keyCode === 65){
 			Game.player.movingLeft = true;
@@ -229,7 +248,7 @@ var Game = {
 };
 
 
-
+// ===== PLAYER STUFF =====
 
 
 // Initialises the player.
@@ -306,6 +325,7 @@ var Bullet = function(x){
 	
 };
 
+
 // Draws the bullet.
 Bullet.prototype.draw = function(){
 	Game.ctx.fillStyle = this.color;
@@ -319,8 +339,6 @@ Bullet.prototype.update = function(){
 		delete Game.bullets[this.index];
 	}
 };
-
-
 
 
 
