@@ -198,12 +198,15 @@ Eliminate all cards as fast as you can to win the game. Have fun FLIPing!
 
   <p class="info">Flip should work best in Google Chrome, decent in Firefox, IE10 and Opera;</p>
 
-  <audio class="loseAudio"> 
-   <source src="audio/lose.mp4" type="audio/mpeg">
-  </audio>
-
-  <audio class="winAudio"> 
-   <source src="audio/win.mp4" type="audio/mpeg">
+  <audio controls class="loseAudio">
+    <source src="audio/lose.mp4"
+           type='audio/mp4'
+           id="loseAudio">
+   <!-- The next two lines are only executed if the browser doesn't support MP4 files -->
+   <source src="http://media.w3.org/2010/07/bunny/04-Death_Becomes_Fur.oga"
+           type='audio/ogg; codecs=vorbis'>
+   <!-- The next line will only be executed if the browser doesn't support the <audio> tag-->
+   <p>Your user agent does not support the HTML5 Audio element.</p>
   </audio>
 
 </div>
