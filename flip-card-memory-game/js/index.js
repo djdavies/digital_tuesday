@@ -19,8 +19,12 @@ $(function(){
     }
 
     var toTime = function(nr){
-        if(nr == '-:-') return nr;
-        else { var n = ' '+nr/1000+' '; return n.substr(0, n.length-1)+'s'; }
+        if(nr == '-:-') { 
+            return nr;
+        } else { 
+            var n = ' '+nr/1000+' ';
+            return n.substr(0, n.length-1)+'s';
+        }
     };
 
     function updateStats(){
@@ -36,6 +40,7 @@ $(function(){
             '<li><b>Wrong Flips:</b> <span>'+get('flip_wrong')+'</span></li></ul></div>');
     };
 
+    //Randomly shuffle the cards
     function shuffle(array) {
         var currentIndex = array.length, temporaryValue, randomIndex;
         while (0 !== currentIndex) {
@@ -57,21 +62,21 @@ $(function(){
         $('.c3').text(text.substring(2, 3));
         $('.c4').text(text.substring(3, 4));
 
-    // If won game
-    if(text == 'nice'){
-        increase('flip_won');
-        decrease('flip_abandoned');
-    }
+        // If won game
+        if(text == 'nice'){
+            increase('flip_won');
+            decrease('flip_abandoned');
+        }
 
-    // If lost game
-    else if(text == 'fail'){
-        increase('flip_lost');
-        decrease('flip_abandoned');
-    }
+        // If lost game
+        else if(text == 'fail'){
+            increase('flip_lost');
+            decrease('flip_abandoned');
+        }
 
-    // Update stats
-    updateStats();
-};
+        // Update stats
+        updateStats();
+    };
 
     /* LOAD GAME ACTIONS */
 
@@ -91,12 +96,16 @@ $(function(){
     }
 
     // Fill stats
-    if( get('flip_won') > 0 || get('flip_lost') > 0 || get('flip_abandoned') > 0) {updateStats();}
+    if( get('flip_won') > 0 || get('flip_lost') > 0 || get('flip_abandoned') > 0) {
+        updateStats();
+    }
 
     // Toggle start screen cards
     $('.logo .card:not(".twist")').on('click', function(e){
         $(this).toggleClass('active').siblings().not('.twist').removeClass('active');
-        if( $(e.target).is('.playnow') ) { $('.logo .card').last().addClass('active'); }
+        if( $(e.target).is('.playnow') ) { 
+            $('.logo .card').last().addClass('active'); 
+        }
     });
 
     // Start game
@@ -108,9 +117,16 @@ $(function(){
         level      = $(this).data('level');
 
         // Set game timer and difficulty   
-        if     (level ==  8) { difficulty = 'casual'; timer *= level * 4; }
-        else if(level == 18) { difficulty = 'medium'; timer *= level * 5; }
-        else if(level == 32) { difficulty = 'hard';   timer *= level * 6; }	    
+        if (level ==  8) { 
+            difficulty = 'casual'; 
+            timer *= level * 4; 
+        } else if(level == 18) { 
+            difficulty = 'medium'; 
+            timer *= level * 5; 
+        } else if(level == 32) { 
+            difficulty = 'hard';   
+            timer *= level * 6; 
+        }	    
 
         $('#g').addClass(difficulty);
 
@@ -119,16 +135,26 @@ $(function(){
             obj = [];
 
             // Create and add shuffled cards to game
-            for(i = 0; i < level; i++) { obj.push(i); }
+            for(i = 0; i < level; i++) { 
+                obj.push(i); 
+            }
 
-            var shu      = shuffle( $.merge(obj, obj) ),
+            var shu = shuffle( $.merge(obj, obj) ),
             cardSize = 100/Math.sqrt(shu.length);
 
             for(i = 0; i < shu.length; i++){
+                //Get the current card
                 var code = shu[i];
-                if(code < 10) code = "0" + code;
-                if(code == 30) code = 10;
-                if(code == 31) code = 21;
+                if(code < 10) { 
+                    code = "0" + code;
+                }
+                if(code == 30) { 
+                    code = 10;
+                }
+                if(code == 31) { 
+                    code = 21;
+                }
+                //Add card to the game's canvas/screen
                 $('<div class="card" style="width:'+cardSize+'%;height:'+cardSize+'%;">'+
                     '<div class="flipper"><div class="f"></div><div class="b" data-f="&#xf0'+code+';"></div></div>'+
                     '</div>').appendTo('#g');
@@ -137,7 +163,9 @@ $(function(){
             // Set card actions
             $('#g .card').on({
                 'mousedown' : function(){
-                    if($('#g').attr('data-paused') == 1) {return;}
+                    if($('#g').attr('data-paused') == 1) {
+                        return;
+                    }
                     var data = $(this).addClass('active').find('.b').attr('data-f');
 
                     if( $('#g').find('.card.active').length > 1){
