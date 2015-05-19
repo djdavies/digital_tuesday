@@ -119,24 +119,26 @@ $(function(){
         // Set game timer and difficulty   
         if (level ==  8) { 
             difficulty = 'casual'; 
-            timer *= level * 4; 
+            timer *= level * 4;
+
         } else if(level == 18) { 
             difficulty = 'medium'; 
-            timer *= level * 5; 
+            timer *= level * 5;
+
         } else if(level == 32) { 
             difficulty = 'hard';   
-            timer *= level * 6; 
-        }	    
+            timer *= level * 6;
+        }
 
         $('#game').addClass(difficulty);
 
         $('.logo').fadeOut(250, function(){
-            var startGame  = $.now(),
+            var startTime  = $.now(),
             obj = [];
 
             // Create and add shuffled cards to game
             for(i = 0; i < level; i++) { 
-                obj.push(i); 
+                obj.push(i);
             }
 
             var shuffledCards = shuffle( $.merge(obj,obj) );
@@ -165,33 +167,16 @@ $(function(){
             // Set the card actions
             $('#game .card').on({
                 'mousedown' : function(){
-
                     // if game paused do nothing
                     if($('#game').attr('data-paused') == 1) {
                         return;
                     }
-
-                    var data = $(this).addClass('active').find('.b').attr('data-f');
-
-                    if( $('#game').find('.card.active').length > 1){
-                        setTimeout(function(){
-                            // a collection of all cards with the matching pattern (e.g. A and A)
-                            var selectedCards = $('#game .active .b[data-f='+data+']');
-                            console.log("selectedCards = " + selectedCards);
-
-                            if( selectedCards.length > 1 ) {
-                                // we know the cards match
-                                selectedCards.parents('.card').toggleClass('active card found').empty();
-                                increase('flip_matched');
-
-                                // if we know there are no more cards left to match in the game, end the game.
-                                checkGameEnded(difficulty, startGame);
-                            } else {
-                                $('#game .card.active').removeClass('active'); // fail
-                                increase('flip_wrong');
-                            }
-                        }, 401);
-                    }
+                    
+                    var thisCard = $(this);
+                    // set this card to be active
+                    thisCard.addClass('active');
+                    
+                    checkForMatchingCards(thisCard);
                 }
             });
 
@@ -241,14 +226,44 @@ $(function(){
         ).appendTo('#game');
     }
 
-    function checkGameEnded(difficulty, startGame) {
+    function checkGameEnded(difficulty, startTime) {
         // Win game
         if( !$('#game .card').length ){
-            var time = $.now() - startGame;
+            var time = $.now() - startTime;
             if( get('flip_'+difficulty) == '-:-' || get('flip_'+difficulty) > time ){
                 set('flip_'+difficulty, time); // increase best score
             }
             startScreen('nice');
+        }
+    }
+
+    function checkForMatchingCards(card) {
+        var data = card.find('.b').attr('data-f');
+        // get collection of all cards with the matching pattern 
+        // (e.g. A and A)
+        var selectedCards = $('#game .active .b[data-f='+data+']');
+
+        if( $('#game').find('.card.active').length > 1){
+            setTimeout(function(){
+                
+                if( selectedCards.length > 1 ) {
+                    // we know the cards match
+                    // so remove them from the board
+                    selectedCards.parents('.card')
+                        .toggleClass('active card found')
+                        .empty();
+                    increase('flip_matched');
+
+                    // if we know there are no more cards left to match in the game, end the game.
+                    checkGameEnded(difficulty, startTime);
+                } else {
+                    // we know the cards are different 
+                    // fail
+                    $('#game .card.active')
+                        .removeClass('active'); 
+                    increase('flip_wrong');
+                }
+            }, 401);
         }
     }
 });
