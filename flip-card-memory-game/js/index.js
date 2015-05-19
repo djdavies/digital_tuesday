@@ -1,21 +1,21 @@
 $(function(){
 
     function set(key, value) { 
-        localStorage.setItem(key, value); 
+        localStorage.setItem(key, value);
     }
     
     function get(key) {
-        return localStorage.getItem(key); 
+        return localStorage.getItem(key);
     }
     
     //Function to take a number and increase it
     function increase(el) { 
-        set(el, parseInt( get(el) ) + 1); 
+        set(el, parseInt( get(el) ) + 1);
     }
 
     //Function to take number and decreases it
     function decrease(el) { 
-        set(el, parseInt( get(el) ) - 1); 
+        set(el, parseInt( get(el) ) - 1);
     }
 
     var toTime = function(nr){
@@ -111,120 +111,131 @@ $(function(){
     // Start game
     $('.play').on('click', function(){
         increase('flip_abandoned');
-
-        var difficulty = '',
-        timer = 1000,
-        level = $(this).data('level');
-
-        // Set game timer and difficulty   
-        if (level ==  8) { 
-            difficulty = 'casual'; 
-            timer *= level * 4;
-
-        } else if(level == 18) { 
-            difficulty = 'medium'; 
-            timer *= level * 5;
-
-        } else if(level == 32) { 
-            difficulty = 'hard';   
-            timer *= level * 6;
-        }
-
+        
+        $playButton = $(this);
+        
+        var numberUniqueCards   = getNumberUniqueCards($playButton);
+        var difficulty          = getDifficulty($playButton);
+        timer                   = getTimeLimit($playButton, numberUniqueCards); // time in milliseconds
         $('#game').addClass(difficulty);
 
-        $('.logo').fadeOut(250, function(){
-            var startTime  = $.now(),
-            obj = [];
-
-            // Create and add shuffled cards to game
-            for(i = 0; i < level; i++) { 
-                obj.push(i);
-            }
-
-            var shuffledCards = shuffle( $.merge(obj,obj) );
-            cardSize = 100/Math.sqrt(shuffledCards.length);
-
-            for(i = 0; i < shuffledCards.length; i++){
-                //Get the current card
-                //TODO find out what setting the current card does
-                var currentCardValue = shuffledCards[i];
-                switch( currentCardValue ) {
-                    case ( currentCardValue < 10 ):
-                        currentCardValue = "0" + currentCardValue;
-                        break;
-                    case ( currentCardValue == 30 ):
-                        currentCardValue = 10;
-                        break;
-                    case ( currentCardValue == 31 ):
-                        currentCardValue = 21;
-                        break;
-                }
-
-                //Add the card to the game's canvas/screen
-                addCardToGameCanvas(cardSize, currentCardValue);                
-            }
-
-            // Set the card actions
-            $('#game .card').on({
-                'mousedown' : function(){
-                    // if game paused do nothing
-                    if($('#game').attr('data-paused') == 1) {
-                        return;
-                    }
-                    
-                    var thisCard = $(this);
-                    // set this card to be active
-                    thisCard.addClass('active');
-                    
-                    var cardValue = thisCard.find('.b').attr('data-f');
-                    checkForMatchingCards(cardValue);
-                }
-            });
-
-            // Add timer bar
-            $('<i class="timer"></i>').prependTo('#game')
-                .css({
-                    'animation' : 'timer '+timer+'ms linear'
-                })
-                .one('webkitAnimationEnd oanimationend msAnimationEnd animationend', function(e) {
-                    startScreen('fail'); // fail game
-                });
-
-            // Set keyboard (p)ause and [esc] actions
-            $(window).off().on('keyup', function(e){
-                // Pause game. (p)
-                if(e.keyCode == 80){
-                    if( $('#game').attr('data-paused') == 1 ) { //was paused, now resume
-                        $('#game').attr('data-paused', '0');
-                        $('.timer').css('animation-play-state', 'running');
-                        $('.pause').remove();
-                    } else {
-                        $('#game').attr('data-paused', '1');
-                        $('.timer').css('animation-play-state', 'paused');
-                        $('<div class="pause"></div>').appendTo('body');
-                    }
-                }
-                // Abandon game. (ESC)
-                if(e.keyCode == 27){
-                    startScreen('flip');
-                    // If game was paused
-                    if( $('#game').attr('data-paused') == 1 ){
-                        $('#game').attr('data-paused', '0');
-                        $('.pause').remove();
-                    }
-                    $(window).off();
-                }
-            });
-        });
+        // start the actual game
+        $('.logo').fadeOut(250, playGame(numberUniqueCards));
     });
 
-    function addCardToGameCanvas(cardSize, currentCardValue) {
-        $('<div class="card" style="width:'+cardSize+'%;height:'+cardSize+'%;">'
-            +'<div class="flipper">'
-                +'<div class="f"></div>'
-                +'<div class="b" data-f="&#xf0'+currentCardValue+';"></div>' 
-            +'</div></div>'
-        ).appendTo('#game');
+    function playGame(numberUniqueCards) {
+        var startTime  = $.now();
+        
+        // and add it to the board
+        var shuffledCardSet = setShuffledCards(numberUniqueCards);
+
+        addCardsToGameCanvas(shuffledCardSet);
+
+        // Set the card actions
+        $('#game .card').on({
+            'mousedown' : function(){
+                // if game paused do nothing
+                if($('#game').attr('data-paused') == 1) {
+                    return;
+                }
+                
+                var thisCard = $(this);
+                // set this card to be active
+                thisCard.addClass('active');
+                
+                var cardValue = thisCard.find('.b').attr('data-f');
+                checkForMatchingCards(cardValue, startTime);
+            }
+        });
+
+        setTimerBar(timer);
+        
+        setPauseAndEscape();
+    }
+
+    function getNumberUniqueCards(playButton) {
+        // default: easy level
+        var numberUniqueCards = 8;
+        if ( playButton.hasClass("difficulty-medium") ) {
+            numberUniqueCards = 16;
+        
+        } else if ( playButton.hasClass("difficulty-hard") ) {
+            numberUniqueCards = 32;
+        
+        }
+        return numberUniqueCards;
+    }
+
+    function getDifficulty(playButton) {
+        // default: easy level
+        var difficulty = 'easy';
+        if ( playButton.hasClass("difficulty-medium") ) {
+            difficulty = 'medium';
+        
+        } else if ( playButton.hasClass("difficulty-hard") ) {
+            difficulty = 'hard';
+
+        }
+        return difficulty;
+    }
+
+    function getTimeLimit(playButton, numberUniqueCards) {
+        var timeLimit = 1000; // milliseconds
+        if ( playButton.hasClass("difficulty-medium") ) {
+            timeLimit *= numberUniqueCards * 4;
+        
+        } else if ( playButton.hasClass("difficulty-hard") ) {
+            timeLimit *= numberUniqueCards * 5;
+        
+        } else {
+            // default: easy level
+            timeLimit *= numberUniqueCards * 6;
+        }
+        return timeLimit;
+    }
+
+    function setShuffledCards(numberUniqueCards) {
+        cardSet = [];
+        // Create and add shuffled cards to game
+        for (i = 0; i < numberUniqueCards; i++) { 
+            cardSet.push(i);
+        }
+        //TODO what does merge do here!
+        // return the same card set but shuffled
+        return shuffle( $.merge(cardSet,cardSet) );
+    }
+
+    function addCardsToGameCanvas(shuffledCards) {
+        cardWidthHeight = 100/Math.sqrt(shuffledCards.length);
+
+        for (i = 0; i < shuffledCards.length; i++) {
+            //Get the current card
+            //TODO find out what setting the current card does
+            var currentCardValue = shuffledCards[i];
+            if ( currentCardValue < 10 ) {
+                currentCardValue = "0" + currentCardValue;
+            }
+
+            //Add the card to the game's canvas/screen
+            // force card size to be the correct width and height
+            $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
+                +'<div class="flipper">'
+                    +'<div class="f"></div>'
+                    +'<div class="b" data-f="&#xf0'+currentCardValue+';"></div>' 
+                +'</div></div>'
+            ).appendTo('#game');             
+        }
+    }
+
+    function setTimerBar(timer) {
+        // Add timer bar
+        $('<i class="timer"></i>').prependTo('#game')
+            .css({
+                'animation' : 'timer '+timer+'ms linear'
+            })
+            .one('webkitAnimationEnd oanimationend msAnimationEnd animationend', function(e) {
+                startScreen('fail'); // fail game
+            });
     }
 
     function checkGameEnded(difficulty, startTime) {
@@ -238,7 +249,7 @@ $(function(){
         }
     }
 
-    function checkForMatchingCards(cardValue) {
+    function checkForMatchingCards(cardValue, startTime) {
         // get collection of all cards with the matching pattern 
         // (e.g. A and A)
         var selectedCards = $('#game .active .b[data-f='+cardValue+']');
@@ -265,5 +276,33 @@ $(function(){
                 }
             }, 401);
         }
+    }
+
+    function setPauseAndEscape() {
+        // Set keyboard (p)ause and [esc] actions
+        $(window).off().on('keyup', function(e){
+            // Pause game. (p)
+            if(e.keyCode == 80){
+                if( $('#game').attr('data-paused') == 1 ) { //was paused, now resume
+                    $('#game').attr('data-paused', '0');
+                    $('.timer').css('animation-play-state', 'running');
+                    $('.pause').remove();
+                } else {
+                    $('#game').attr('data-paused', '1');
+                    $('.timer').css('animation-play-state', 'paused');
+                    $('<div class="pause"></div>').appendTo('body');
+                }
+            }
+            // Abandon game. (ESC)
+            if(e.keyCode == 27){
+                startScreen('flip');
+                // If game was paused
+                if( $('#game').attr('data-paused') == 1 ){
+                    $('#game').attr('data-paused', '0');
+                    $('.pause').remove();
+                }
+                $(window).off();
+            }
+        });
     }
 });
