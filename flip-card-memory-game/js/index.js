@@ -1,6 +1,7 @@
 $(function(){
 
-    //The number of matches made between card pairs
+    var difficulty;
+    var numberUniqueCards;
     var numberMatches = 0;
 
     function set(key, value) { 
@@ -114,13 +115,14 @@ $(function(){
     });
     playAudio();
     // Start game
-    $('.play').on('click', function(){
+    $('.play').on('click', function(e){
+        e.preventDefault();
         increase('flip_abandoned');
         
         $playButton = $(this);
         
         var numberUniqueCards   = getNumberUniqueCards($playButton);
-        var difficulty          = getDifficulty($playButton);
+        difficulty              = setDifficulty($playButton);
         timer                   = getTimeLimit($playButton, numberUniqueCards); // time in milliseconds
         $('#game').addClass(difficulty);
 
@@ -133,10 +135,7 @@ $(function(){
         var startTime  = $.now();
         pauseAudio();
         
-        // and add it to the board
-        var shuffledCardSet = getRandomShuffledSet(numberUniqueCards);
-
-        addCardsToGameCanvas(shuffledCardSet);
+        setUpCards(numberUniqueCards);
 
         // Set the card actions
         $('#game .card').on({
@@ -150,7 +149,7 @@ $(function(){
                 // set this card to be active
                 thisCard.addClass('active');
                 
-                var cardValue = thisCard.find('.b').attr('data-f');
+                var cardValue = thisCard.find('.card-visible').attr('data-source');
                 checkForMatchingCards(cardValue, startTime);
             }
         });
@@ -164,7 +163,7 @@ $(function(){
         // default: easy level
         var numberUniqueCards = 8;
         if ( playButton.hasClass("difficulty-medium") ) {
-            numberUniqueCards = 16;
+            numberUniqueCards = 18;
         
         } else if ( playButton.hasClass("difficulty-hard") ) {
             numberUniqueCards = 32;
@@ -173,9 +172,9 @@ $(function(){
         return numberUniqueCards;
     }
 
-    function getDifficulty(playButton) {
+    function setDifficulty(playButton) {
         // default: easy level
-        var difficulty = 'easy';
+        difficulty = 'easy';
         if ( playButton.hasClass("difficulty-medium") ) {
             difficulty = 'medium';
         
@@ -192,46 +191,26 @@ $(function(){
             timeLimit *= numberUniqueCards * 4;
         
         } else if ( playButton.hasClass("difficulty-hard") ) {
-            timeLimit *= numberUniqueCards * 5;
+            timeLimit *= numberUniqueCards * 6;
         
         } else {
             // default: easy level
-            timeLimit *= numberUniqueCards * 6;
+            timeLimit *= numberUniqueCards * 8;
         }
         return timeLimit;
     }
 
-    function getRandomShuffledSet(numberUniqueCards) {
-        cardSet = [];
-        // Create and add shuffled cards to game
-        for (i = 0; i < numberUniqueCards; i++) { 
-            cardSet.push(i);
-        }
-        //TODO what does merge do here!
-        // return the same card set but shuffled
-        return shuffle( $.merge(cardSet,cardSet) );
-    }
+    function setUpCards(numberUniqueCards) {
+        
+        // // we use merge which will double up the unicodeIcons
+        // // which we then shuffle (so the "cards" are mixed)
+        var unicodeIcons = getUnicodeSources(numberUniqueCards);
+        unicodeIcons = shuffle($.merge(unicodeIcons, unicodeIcons));
 
-    function addCardsToGameCanvas(shuffledCards) {
-        cardWidthHeight = 100/Math.sqrt(shuffledCards.length);
-        console.log("the shuffled cards are:" + shuffledCards);
-        for (i = 0; i < shuffledCards.length; i++) {
-            //Get the current card
-            //TODO find out what setting the current card does
-            var currentCardValue = shuffledCards[i];
-            if ( currentCardValue < 10 ) {
-                currentCardValue = "0" + currentCardValue;
-            }
+        renderUnicodeSources(unicodeIcons);
 
-            //Add the card to the game's canvas/screen
-            // force card size to be the correct width and height
-            $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
-                +'<div class="flipper">'
-                    +'<div class="f"></div>'
-                    +'<div class="b" data-f="&#xf0'+currentCardValue+';"></div>' 
-                +'</div></div>'
-            ).appendTo('#game');
-        }
+        // var images = getImageSources();
+        // renderImages(shuffle($.merge(images, images)));
     }
 
     function setTimerBar(timer) {
@@ -245,7 +224,7 @@ $(function(){
             });
     }
 
-    function checkGameEnded(difficulty, startTime) {
+    function checkGameEnded(startTime) {
         // Win game
         if( !$('#game .card').length ){
             var time = $.now() - startTime;
@@ -261,11 +240,11 @@ $(function(){
     function checkForMatchingCards(cardValue, startTime) {
         // get collection of all cards with the matching pattern 
         // (e.g. A and A)
-        var selectedCards = $('#game .active .b[data-f='+cardValue+']');
-
+        var selectedCards = $('#game .active .card-visible[data-source='+cardValue+']');
+        
         if( $('#game').find('.card.active').length > 1){
             setTimeout(function(){
-                
+
                 if( selectedCards.length > 1 ) {
                     // we know the cards match
                     // so remove them from the board
@@ -296,6 +275,63 @@ $(function(){
 
                 }
             }, 401);
+        }
+    }
+
+    function testMatchingCards() {}
+
+    function getUnicodeSources(numberIcons) {
+        var unicodeSources = [];
+        var unicodeStarter = "&#xf0";
+        for( i=0; i<numberIcons; i++ ) {
+            // each icon has the number format: 001, 002 etc. 
+            if( i < 10 ) {
+                unicodeSources[i] = unicodeStarter + "0" + i;
+            } else {
+                unicodeSources[i] = unicodeStarter + i;
+            }
+        }
+        return unicodeSources;
+    }
+
+    function renderUnicodeSources(unicodeSources) {
+        var cardWidthHeight = 100/Math.sqrt(unicodeSources.length);
+
+        for( i=0; i<unicodeSources.length; i++ ) {
+            //Add the card to the game's canvas/screen
+            // force card size to be the correct width and height
+            $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
+                +'<div class="flipper">'
+                    +'<div class="card-hidden"></div>'
+                    +'<div class="card-visible" data-source="'+unicodeSources[i]+'"/></div>' 
+                +'</div>'+
+            '</div>').appendTo('#game');
+        }
+    }
+
+    function getImageSources() {
+        var imageSources = [
+            "01", "02", "03", "04", "05", "06"
+        ];
+        // create the url path for each image file in the names array
+        for ( i=0; i < imageSources.length; i++) {
+            imageSources[i] = 'images/' + imageSources[i] + '.png';
+        }
+        return imageSources;
+    }
+
+    function renderImages(imageSources) {
+        var cardWidthHeight = 100/Math.sqrt(imageSources.length);
+
+        for( i=0; i<imageSources.length; i++ ) {
+            //Add the card to the game's canvas/screen
+            // force card size to be the correct width and height
+            $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
+                +'<div class="flipper">'
+                    +'<div class="card-hidden"></div>'
+                    +'<img class="b" src="'+imageSources[i]+'"/></div>' 
+                +'</div></div>'
+            ).appendTo('#game');
         }
     }
 
