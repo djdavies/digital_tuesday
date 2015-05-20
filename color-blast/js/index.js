@@ -25,12 +25,16 @@
             this.maxParticles = 10;
             this.maxEnemies = 6;
             this.enemiesAlive = 0;
+
+            this.maxBossEnemies = 0;
+            this.bossEnemiesAlive = 0;
+            
             this.currentFrame = 0;
             this.maxLives = 3;
             this.life = 0;
             this.binding();
             this.player = new Player();
-            this.score = 480;
+            this.score = 2900;
             this.paused = false;
             this.shooting = false;
             this.oneShot = false;
@@ -38,7 +42,7 @@
             // Requests animation frames for multiple browser rendering engines.
             this.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
             
-            // Add enemies into the game (maxEnemies=6).
+            // Add enemies into the game.
             for(var i = 0; i<this.maxEnemies; i++){
                 new Enemy();
                 this.enemiesAlive++;
@@ -201,6 +205,11 @@
             if(this.score % 500 === 0){
                 Game.maxEnemies = (this.score / 500)*2 + Game.enemiesAlive;
             }
+
+            if(this.score % 3000 === 0){
+                // Here comes the boss...
+                Game.maxBossEnemies = 1;
+            }
         },
 
         // The main game loop.
@@ -344,19 +353,29 @@
     };
 
     // Initialises the enemy/enemies (they're all the same).
-    var Enemy = function(){
-        this.width = 60;
-        this.height = 20;
+    var Enemy = function(isBossEnemy){
+        if (isBossEnemy) {
+            this.width = 60;
+            this.height = 20;
+            this.shootingSpeed = Game.random(30, 80);
+            this.speed = Game.random(2, 3);
+            this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
+        } else {
+            this.width = 360;
+            this.height = 120;
+            this.shootingSpeed = Game.random(50, 90);
+            this.speed = Game.random(3, 4);
+            this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
+        }
+
+        this.isBossEnemy = isBossEnemy;
         this.x = Game.random(0, (Game.c.width - this.width));
         this.y = Game.random(10, 40);
         this.vy = Game.random(1, 3) * .1;
         this.index = Game.enemyIndex;
         Game.enemies[Game.enemyIndex] = this;
         Game.enemyIndex++;
-        this.speed = Game.random(2, 3);
-        this.shootingSpeed = Game.random(30, 80);
         this.movingLeft = Math.random() < 0.5 ? true : false;
-        this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
     };
 
     // Draws the enemy.
@@ -377,14 +396,12 @@
             }
 
         } else {
-            
             if(this.x + this.width < Game.c.width){
                 this.x += this.speed;
                 this.y += this.vy;
             } else {
                 this.movingLeft = true;
             }
-
         }
         
         // Determines whether a bullet hits the player?
@@ -404,11 +421,25 @@
         this.explode();
         delete Game.enemies[this.index];
         Game.score += 10;
-        Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
+        if(!this.isBossEnemy) {
+            // If >1, decrement by 1; otherwise if 0, keep it 0.
+            Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
+        } else {
+            // If >1, decrement by 1; otherwise if 0, keep it 0.
+            Game.bossEnemiesAlive= Game.bossEnemiesAlive > 1 ? Game.bossEnemiesAlive - 1 : 0;
+        }
+
         while(Game.enemiesAlive < Game.maxEnemies){
             Game.enemiesAlive++;
             setTimeout(function(){
                 new Enemy();
+            }, 2);
+        }
+
+        while(Game.bossEnemiesAlive < Game.maxBossEnemies){
+            Game.bossEnemiesAlive++;
+            setTimeout(function(){
+                new Enemy(true);
             }, 2);
         }
     };
