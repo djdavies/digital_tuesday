@@ -1,5 +1,16 @@
 $(function(){
 
+    // variables
+    var Game = {
+        // Initialise everything we need to use.
+        init: function(){
+            this.board = "";
+            this.difficulty = "";
+            this.sourceType = "icons";
+            this.numberUniqueCards;
+        }
+    };
+
     var difficulty;
     var numberUniqueCards;
     var numberMatches = 0;
@@ -151,7 +162,7 @@ $(function(){
                 // set this card to be active
                 thisCard.addClass('active');
                 
-                var cardValue = thisCard.find('.card-visible').attr('data-source');
+                var cardValue = thisCard.find('.show-icon').attr('data-source');
                 checkForMatchingCards(cardValue, startTime);
             }
         });
@@ -244,7 +255,7 @@ $(function(){
     function checkForMatchingCards(cardValue, startTime) {
         // get collection of all cards with the matching pattern 
         // (e.g. A and A)
-        var selectedCards = $('#game .active .card-visible[data-source='+cardValue+']');
+        var selectedCards = $('#game .active .show-icon[data-source='+cardValue+']');
         
         if( $('#game').find('.card.active').length > 1){
             setTimeout(function(){
@@ -312,29 +323,26 @@ $(function(){
 
     function renderUnicodeSources(unicodeSources) {
         var cardWidthHeight = 100/Math.sqrt(unicodeSources.length);
+        console.log(cardWidthHeight);
 
         for( i=0; i<unicodeSources.length; i++ ) {
-            //Add the card to the game's canvas/screen
-            // force card size to be the correct width and height
-            // $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
-            //     +'<div class="flipper">'
-            //         +'<div class="card-hidden"></div>'
-            //         +'<div class="card-visible" data-source="'+unicodeSources[i]+'"/></div>' 
-            //     +'</div>'+
-            // '</div>').appendTo('#game');
             addCardToCanvas(unicodeSources[i], cardWidthHeight);
         }
     }
 
     function addCardToCanvas(card, cardWidthHeight) {
+        var htmlToRender = '<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
+                                +'<div class="flipper">'
+                                    +'<div class="hide-icon"></div>'
+                                    +'<div class="show-icon" data-source="'+card+'"/></div>' 
+                                +'</div>'+
+                            '</div>';
+
+        console.log(htmlToRender);
+
         //Add the card tot he game's canvas/screen
         //force card size to be the correct width and height
-        $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
-                +'<div class="flipper">'
-                    +'<div class="hide-icon hide-image"></div>'
-                    +'<div class="show-icon show-image" data-source="'+card+'"/></div>' 
-                +'</div>'+
-            '</div>').appendTo('#game');
+        $(htmlToRender).appendTo('#game');
     }
 
     function getImageSources(numberUniqueCards) {
@@ -342,11 +350,11 @@ $(function(){
         // create the url path for each image file in the names array
         for ( i=1; i <numberUniqueCards+1; i++) {
             if( i < 10 ) {
-                imageSources[i] = 'images/image00' + i + '.png';
+                imageSources[i] = 'images/00' + i + '.png';
             } else if( i > 99 ) {
-                imageSources[i] = 'images/image' + i + '.png';
+                imageSources[i] = 'images/' + i + '.png';
             } else {
-                imageSources[i] = 'images/image0' + i + '.png';
+                imageSources[i] = 'images/0' + i + '.png';
             }
         }
         return imageSources;
@@ -361,8 +369,8 @@ $(function(){
             $('<div class="card" style="width:'+cardWidthHeight+'%; height:'+cardWidthHeight+'%;">'
                 +'<div class="container" style="overflow:hidden;">'
                     +'<div class="flipper">'
-                        +'<div class="card-hidden"></div>'
-                            +'<img class="image-visible" src="'+imageSources[i]+'" style="align:middle;"/>' 
+                        +'<div class="hide-image"></div>'
+                        +'<img class="show-image" src="'+imageSources[i]+'" style="align:middle;"/>' 
                     +'</div>'
                 +'</div>'
             +'</div>').appendTo('#game');
