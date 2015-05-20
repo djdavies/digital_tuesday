@@ -6,7 +6,7 @@ body, html{margin:0;font:normal 0/0 Arial, Helvetica, sans-serif;background:#333
   	-ms-user-select: none;
   	user-select: none;
 }
-body, html, .flipper, .show-icon, .hide-icon, .show-image, .hide-icon #game {
+body, html, .flipper, .show-icon, .hide-icon, .show-image, .hide-image, #game {
     width:100%;height:100%;
 }
 
