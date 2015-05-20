@@ -144,7 +144,7 @@ $(function(){
                 // set this card to be active
                 thisCard.addClass('active');
                 
-                var cardValue = thisCard.find('.b').attr('data-f');
+                var cardValue = thisCard.find('.card-visible').attr('data-source');
                 checkForMatchingCards(cardValue, startTime);
             }
         });
@@ -158,7 +158,7 @@ $(function(){
         // default: easy level
         var numberUniqueCards = 8;
         if ( playButton.hasClass("difficulty-medium") ) {
-            numberUniqueCards = 16;
+            numberUniqueCards = 18;
         
         } else if ( playButton.hasClass("difficulty-hard") ) {
             numberUniqueCards = 32;
@@ -186,26 +186,26 @@ $(function(){
             timeLimit *= numberUniqueCards * 4;
         
         } else if ( playButton.hasClass("difficulty-hard") ) {
-            timeLimit *= numberUniqueCards * 5;
+            timeLimit *= numberUniqueCards * 6;
         
         } else {
             // default: easy level
-            timeLimit *= numberUniqueCards * 6;
+            timeLimit *= numberUniqueCards * 8;
         }
         return timeLimit;
     }
 
     function setUpCards(numberUniqueCards) {
-        // var unicodeIcons = getUnicodeSources(numberUniqueCards);
         
         // // we use merge which will double up the unicodeIcons
         // // which we then shuffle (so the "cards" are mixed)
-        // unicodeIcons = shuffle($.merge(unicodeIcons, unicodeIcons));
+        var unicodeIcons = getUnicodeSources(numberUniqueCards);
+        unicodeIcons = shuffle($.merge(unicodeIcons, unicodeIcons));
 
-        // renderUnicodeSources(unicodeIcons);
+        renderUnicodeSources(unicodeIcons);
 
-        var images = getImageSources();
-        renderImages(shuffle($.merge(images, images)));
+        // var images = getImageSources();
+        // renderImages(shuffle($.merge(images, images)));
     }
 
     function setTimerBar(timer) {
@@ -234,11 +234,11 @@ $(function(){
     function checkForMatchingCards(cardValue, startTime) {
         // get collection of all cards with the matching pattern 
         // (e.g. A and A)
-        var selectedCards = $('#game .active .b[data-f='+cardValue+']');
-
+        var selectedCards = $('#game .active .card-visible[data-source='+cardValue+']');
+        
         if( $('#game').find('.card.active').length > 1){
             setTimeout(function(){
-                
+
                 if( selectedCards.length > 1 ) {
                     // we know the cards match
                     // so remove them from the board
@@ -260,19 +260,18 @@ $(function(){
         }
     }
 
+    function testMatchingCards() {}
+
     function getUnicodeSources(numberIcons) {
         var unicodeSources = [];
         var unicodeStarter = "&#xf0";
         for( i=0; i<numberIcons; i++ ) {
-            unicodeSources[i] = unicodeStarter + i;
             // each icon has the number format: 001, 002 etc. 
             if( i < 10 ) {
                 unicodeSources[i] = unicodeStarter + "0" + i;
+            } else {
+                unicodeSources[i] = unicodeStarter + i;
             }
-        }
-
-        for( i=0; i<unicodeSources.length; i++ ) {
-            console.log(unicodeSources[i]);
         }
         return unicodeSources;
     }
@@ -285,10 +284,10 @@ $(function(){
             // force card size to be the correct width and height
             $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
                 +'<div class="flipper">'
-                    +'<div class="f"></div>'
-                    +'<div class="b" data-f="'+unicodeSources[i]+'">'
-                +'</div></div>'
-            ).appendTo('#game');
+                    +'<div class="card-hidden"></div>'
+                    +'<div class="card-visible" data-source="'+unicodeSources[i]+'"/></div>' 
+                +'</div>'+
+            '</div>').appendTo('#game');
         }
     }
 
@@ -311,7 +310,7 @@ $(function(){
             // force card size to be the correct width and height
             $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
                 +'<div class="flipper">'
-                    +'<div class="f"></div>'
+                    +'<div class="card-hidden"></div>'
                     +'<img class="b" src="'+imageSources[i]+'"/></div>' 
                 +'</div></div>'
             ).appendTo('#game');
