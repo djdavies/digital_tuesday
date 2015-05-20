@@ -113,7 +113,9 @@ $(function(){
             $('.logo .card').last().addClass('active'); 
         }
     });
+    
     playAudio();
+    
     // Start game
     $('.play').on('click', function(e){
         e.preventDefault();
@@ -135,7 +137,7 @@ $(function(){
         var startTime  = $.now();
         pauseAudio();
         
-        setUpCards(numberUniqueCards);
+        setUpCards(numberUniqueCards, "images");
 
         // Set the card actions
         $('#game .card').on({
@@ -200,17 +202,20 @@ $(function(){
         return timeLimit;
     }
 
-    function setUpCards(numberUniqueCards) {
+    function setUpCards(numberUniqueCards, sourceType) {
         
-        // // we use merge which will double up the unicodeIcons
-        // // which we then shuffle (so the "cards" are mixed)
-        var unicodeIcons = getUnicodeSources(numberUniqueCards);
-        unicodeIcons = shuffle($.merge(unicodeIcons, unicodeIcons));
+        if( sourceType == "images" ) {
+            // var images = getImageSources(numberUniqueCards);
+            // renderImages(shuffle($.merge(images, images)));
+        } else {
+            // default to icons
+            // we use merge which will double up the unicodeIcons
+            // which we then shuffle (so the "cards" are mixed)
+            var unicodeIcons = getUnicodeSources(numberUniqueCards);
+            unicodeIcons = shuffle($.merge(unicodeIcons, unicodeIcons));
 
-        renderUnicodeSources(unicodeIcons);
-
-        // var images = getImageSources();
-        // renderImages(shuffle($.merge(images, images)));
+            renderUnicodeSources(unicodeIcons);
+        }
     }
 
     function setTimerBar(timer) {
@@ -233,7 +238,6 @@ $(function(){
             }
             startScreen('nice');
         }
-        // SOMETHING HERE GAME END (MUSIC ETC)
         playAudio();
     }
 
@@ -278,17 +282,29 @@ $(function(){
         }
     }
 
-    function testMatchingCards() {}
+    function removeMatchedCardPair(card1, card2) {
+        card1.parents('.card')
+            .toggleClass('active card found')
+            .empty();
+
+        card2.parents('.card')
+            .toggleClass('active card found')
+            .empty();
+
+        return;
+    }
 
     function getUnicodeSources(numberIcons) {
         var unicodeSources = [];
-        var unicodeStarter = "&#xf0";
-        for( i=0; i<numberIcons; i++ ) {
+        var unicodeStarter = "&#xf";
+        for( i=1; i<numberIcons+1; i++ ) {
             // each icon has the number format: 001, 002 etc. 
             if( i < 10 ) {
-                unicodeSources[i] = unicodeStarter + "0" + i;
-            } else {
+                unicodeSources[i] = unicodeStarter + "00" + i;
+            } else if( i > 99 ) {
                 unicodeSources[i] = unicodeStarter + i;
+            } else {
+                unicodeSources[i] = unicodeStarter + "0" + i;
             }
         }
         return unicodeSources;
@@ -309,13 +325,17 @@ $(function(){
         }
     }
 
-    function getImageSources() {
-        var imageSources = [
-            "01", "02", "03", "04", "05", "06"
-        ];
+    function getImageSources(numberUniqueCards) {
+        var imageSources = [];
         // create the url path for each image file in the names array
-        for ( i=0; i < imageSources.length; i++) {
-            imageSources[i] = 'images/' + imageSources[i] + '.png';
+        for ( i=1; i <numberUniqueCards+1; i++) {
+            if( i < 10 ) {
+                imageSources[i] = 'images/image00' + i + '.png';
+            } else if( i > 99 ) {
+                imageSources[i] = 'images/image' + i + '.png';
+            } else {
+                imageSources[i] = 'images/image0' + i + '.png';
+            }
         }
         return imageSources;
     }
@@ -326,12 +346,14 @@ $(function(){
         for( i=0; i<imageSources.length; i++ ) {
             //Add the card to the game's canvas/screen
             // force card size to be the correct width and height
-            $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
-                +'<div class="flipper">'
-                    +'<div class="card-hidden"></div>'
-                    +'<img class="b" src="'+imageSources[i]+'"/></div>' 
-                +'</div></div>'
-            ).appendTo('#game');
+            $('<div class="card" style="width:'+cardWidthHeight+'%; height:'+cardWidthHeight+'%;">'
+                +'<div class="container" style="overflow:hidden;">'
+                    +'<div class="flipper">'
+                        +'<div class="card-hidden"></div>'
+                            +'<img class="image-visible" src="'+imageSources[i]+'" style="align:middle;"/>' 
+                    +'</div>'
+                +'</div>'
+            +'</div>').appendTo('#game');
         }
     }
 
@@ -369,7 +391,7 @@ $(function(){
     }
 
     function playAudio () {
-        document.getElementById('gameAudio').play();
+        //document.getElementById('gameAudio').play();
         //song.play();
     }
 
