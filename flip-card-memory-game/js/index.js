@@ -136,7 +136,7 @@ $(function(){
         var startTime  = $.now();
         pauseAudio();
         
-        setUpCards(numberUniqueCards, "images");
+        setUpCards(numberUniqueCards, "icons");
 
         // Set the card actions
         $('#game .card').on({
@@ -331,13 +331,13 @@ $(function(){
     function getImageSources(numberUniqueCards) {
         var imageSources = [];
         // create the url path for each image file in the names array
-        for ( i=0; i <numberUniqueCards; i++) {
+        for ( i=1; i < numberUniqueCards+1; i++) {
             if( i < 10 ) {
-                imageSources[i] = 'images/00' + i + '.png';
+                imageSources[i-1] = 'images/00' + i + '.png';
             } else if( i > 99 ) {
-                imageSources[i] = 'images/' + i + '.png';
+                imageSources[i-1] = 'images/' + i + '.png';
             } else {
-                imageSources[i] = 'images/0' + i + '.png';
+                imageSources[i-1] = 'images/0' + i + '.png';
             }
         }
         return imageSources;
@@ -349,13 +349,11 @@ $(function(){
         for( i=0; i<imageSources.length; i++ ) {
             //Add the card to the game's canvas/screen
             // force card size to be the correct width and height
-            $('<div class="card" style="width:'+cardSideLength+'%; height:'+cardSideLength+'%;">'
-                +'<div class="container" style="overflow:hidden;">'
-                    +'<div class="flipper">'
-                        +'<div class="hide-image"></div>'
-                        +'<img class="show-image" src="'+imageSources[i]+'" '
-                            +'style="width:100%; height:100%; align:middle;"/>' 
-                    +'</div>'
+            $('<div class="card card-images" style="width:'+cardSideLength+'%; height:'+cardSideLength+'%;">'
+                +'<div class="flipper" style="overflow:hidden;">'
+                    +'<div class="hide-image"></div>'
+                    +'<img class="show-image" src="'+imageSources[i]+'" '
+                        +'style="max-width:50%; max-height:50%; text-align:center;"/>' 
                 +'</div>'
             +'</div>').appendTo('#game');
         }
