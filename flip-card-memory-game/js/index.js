@@ -252,14 +252,14 @@ $(function(){
                         .toggleClass('active card found')
                         .empty();
                     increase('flip_matched');
-                    //Increase number of matches between card pairs by 1;
+                    //Increase number of consecutive matches between card pairs by 1;
                     numberMatches ++;
-                    //The number of matches between cards can be fully divided by 3
-                    //so highlight a matching pair from the leftover ones
 
-                    console.log("current number of matches: " + numberMatches);
                     if (numberMatches == 3) {
-                        highlightCards();
+                        //The number of matches between cards consecutively is 3
+                        //so we temporarily flip all leftover cards on the game board
+                        flipCards();
+                        //then reset the counter
                         numberMatches = 0;
                     }
 
@@ -363,9 +363,13 @@ $(function(){
         });
     }
 
-    function highlightCards() {
-        //Pick a pair of matching cards from the remaining ones and highlight them
-        console.log("number of matches is divisiable by 3 with no remainder" );
+    function flipCards() {
+        
+        //Flip all the cards in the game for 0.3 seconds before hiding them
+        $( '.card' ).addClass( 'active').delay( 300 ).queue(function() {
+            $(this).removeClass( 'active');
+            $(this).dequeue();
+        });
     }
 
     function playAudio () {
