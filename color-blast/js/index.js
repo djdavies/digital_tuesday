@@ -36,8 +36,6 @@
             this.buffIndex = 0;
             this.maxParticles = 10;
             this.maxEnemies = 6;
-            // Maximum number of buffs
-            this.maxBuffs = 1;
             this.enemiesAlive = 0;
             // Buffs on currently on screen.
             this.buffsOnScreen = 0;
@@ -212,11 +210,6 @@
             this.ctx.font = "16px Lato, sans-serif";
             this.ctx.fillText("Score: " + this.score, 8, 20);
             this.ctx.fillText("Lives: " + (this.maxLives - this.life), 8, 40);
-
-            // Adds more enemies everytime player scores another 500 points.
-            if(this.score % 500 === 0){
-                Game.maxEnemies = (this.score / 500)*2 + Game.enemiesAlive;
-            }
         },
 
         //  Updates the player's health
@@ -255,13 +248,22 @@
                     Game.buffs[j].update();
                 } 
 
-                // Draws the player on the screen?
+                // Creates flashing animation to indicate player in invisible mode.
                 if(Game.player.invincible){
                     if(Game.currentFrame % 20 === 0){
                         Game.player.draw();
                     }
                 } else {
                     Game.player.draw();
+                }
+
+                // Make a buff appear on the screen
+                var randomInt  = Game.random(1,1500);
+                if (randomInt === 1) {
+                    var buff = new Health();
+                    setTimeout(function() {
+                        buff.disappear();
+                    }, 5000);
                 }
 
                 // "Particicles are enemies exploding" -- Luke.
@@ -386,15 +388,15 @@
 
     // Create a health increase power up
     var Health = function () {
-        this.width = 60;
-        this.height = 20;
+        this.width = 30;
+        this.height = 10;
         this.x = Game.random(0, (Game.c.width - this.width));
         this.y = Game.random(10, 40);
         this.vy = Game.random(1, 3) * .1;
         this.index = Game.buffIndex;
         Game.buffs[Game.buffIndex] = this;
         Game.buffIndex++;
-        this.speed = 4;
+        this.speed = 5;
         this.movingLeft = Math.random() < 0.5 ? true : false;
         this.color = "hsla(330, 100%, 50%, 1)";
     };
@@ -402,7 +404,8 @@
     // Draw health icon
     Health.prototype.draw = function() {
         Game.ctx.fillStyle = this.color;
-        Game.ctx.fillText("Health", this.x, this.y, this.width);
+        Game.ctx.font = "25px Arial";
+        Game.ctx.fillText("\u2764", this.x, this.y, this.width);
     };
 
     Health.prototype.update = function() {
@@ -446,6 +449,12 @@
         Game.maxLives += 1;
         Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
     };
+
+    Health.prototype.disappear = function() {
+        delete Game.buffs[this.index];
+        Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
+    }
+
 
         // Exploding uses 'Particles', a little explosion animation.
     Health.prototype.explode = function(){
@@ -491,7 +500,6 @@
                 this.die();
                 delete Game.bullets[i];
             }
-
         } 
     };
 
@@ -501,14 +509,19 @@
         dieSound.play();
         dieSound.currentTime=0;
         delete Game.enemies[this.index];
-        Game.score += 10;
+        Game.score += 100;
         Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
         while(Game.enemiesAlive < Game.maxEnemies){
             Game.enemiesAlive++;
             setTimeout(function(){
                 new Enemy();
             }, 2);
-            new Health();
+        }
+
+        // Adds more enemies everytime player scores another 500 points.
+        if(Game.score % 500 === 0 ){
+            console.log("max=" + Game.maxEnemies);
+            Game.maxEnemies += 1;
         }
     };
 
