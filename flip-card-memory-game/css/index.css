@@ -6,7 +6,7 @@ body, html{margin:0;font:normal 0/0 Arial, Helvetica, sans-serif;background:#333
   	-ms-user-select: none;
   	user-select: none;
 }
-body, html, .flipper, .card-hidden, .card-visible, #game {
+body, html, .flipper, .show-icon, .hide-icon, .show-image, .hide-icon #game {
     width:100%;height:100%;
 }
 
@@ -39,10 +39,10 @@ a:hover{
 .logo .card.left.active + .card{
     opacity:0
 }
-.logo .card.left.active .card-visible{
+.logo .card.left.active .show-icon{
     margin-left:-100%
 }
-.logo .card-hidden{
+.logo .hide-icon{
     font:normal 130px/225px 'Open Sans';text-align:center;text-transform:uppercase;
 }
 .logo .c2{
@@ -109,7 +109,7 @@ display:block;text-align:center;}
 .card:not(.active):hover{
     opacity:.8
 }
-.card .card-visible::before{
+.card .show-icon::before{
     content:attr(data-source);display:block;font:normal 100px/100px "GeneralFoundicons";
     position:absolute;top:50%;margin-top:-50px;width:100%;text-align:center
 }
@@ -118,50 +118,50 @@ display:block;text-align:center;}
 .flipper {
     position:relative;-webkit-transform-style:preserve-3d;-moz-transform-style:preserve-3d
 }
-.card-hidden, .card-visible {
+.hide-icon, .show-icon {
     position:absolute;top:0;left:0;box-shadow:inset 0 0 0 1px #333;-webkit-backface-visibility:hidden;-moz-backface-visibility:hidden
 }
-.card-hidden {
+.hide-icon {
     background:#16A085;z-index:1
 }
-.card-visible {
+.show-icon {
     background:#C0392B;opacity:0
 }
-.card.active .card-visible{
+.card.active .show-icon{
     z-index:2;opacity:1
 }
 
 /*Grouped for easy prefixing*/
-.card, .flipper, .logo .card-visible{
+.card, .flipper, .logo .show-icon{
     transition:400ms;-ms-transition:400ms;-webkit-transition:400ms;-moz-transition:400ms;-o-transition:400ms
 }
-.card.active .flipper, .card-visible {
+.card.active .flipper, .show-icon {
     transform:rotateY(180deg);-webkit-transform:rotateY(180deg);-moz-transform:rotateY(180deg);-ms-transform:rotateY(180deg);-o-transform:rotateY(180deg)
 }
-.logo .card-hidden, .card .card-visible::before, .pause::before{-webkit-text-stroke: 1px #fff} /*webkit only*/
+.logo .hide-icon, .card .show-icon::before, .pause::before{-webkit-text-stroke: 1px #fff} /*webkit only*/
 
 /*Responsive Stuff*/
 @media all and (max-width: 1680px) and (min-width: 640px){
-	.card .card-visible::before{font-size:90px}
-	#game.medium .card .card-visible::before{font-size:70px}
-	#game.hard .card .card-visible::before{font-size:50px}
+	.card .show-icon::before{font-size:90px}
+	#game.medium .card .show-icon::before{font-size:70px}
+	#game.hard .card .show-icon::before{font-size:50px}
 }
 @media all and (max-width: 640px) and (min-width: 470px){
-	.card .card-visible::before{font-size:90px}
-	#game.medium .card .card-visible::before{font-size:60px}
-	#game.hard .card .card-visible::before{font-size:50px}
+	.card .show-icon::before{font-size:90px}
+	#game.medium .card .show-icon::before{font-size:60px}
+	#game.hard .card .show-icon::before{font-size:50px}
 }
 
 @media all and (max-width: 470px) and (min-width: 0px){
-  	.card .card-visible::before{font-size:60px}
-  	#game.medium .card .card-visible::before{font-size:35px;-webkit-text-stroke:0;}
-  	#game.hard .card .card-visible::before{font-size:32px;-webkit-text-stroke:0;}
+  	.card .show-icon::before{font-size:60px}
+  	#game.medium .card .show-icon::before{font-size:35px;-webkit-text-stroke:0;}
+  	#game.hard .card .show-icon::before{font-size:32px;-webkit-text-stroke:0;}
 }
 
 @media all and (max-width: 640px) and (min-width: 0px){
   	a{line-height:50px;font-size:13px}
   	.logo{width:300px;height:300px;margin:-150px 0 0 -150px}
-  	.logo .card-hidden{font:normal 80px/150px 'Open Sans'}
+  	.logo .hide-icon{font:normal 80px/150px 'Open Sans'}
   	.logo .contentbox h2{font-size:16px;margin:24px 0;}
   	.logo .instructions h2{display:none}
   	.logo .instructions.contentbox p:nth-child(3){display:none}
@@ -169,6 +169,6 @@ display:block;text-align:center;}
 }
 
 /* IMAGE CODE */
-.image-visible {
+.show-image {
     background:#C0392B;opacity:0
 }
