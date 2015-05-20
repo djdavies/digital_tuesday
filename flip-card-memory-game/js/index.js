@@ -137,7 +137,7 @@ $(function(){
         var startTime  = $.now();
         pauseAudio();
         
-        setUpCards(numberUniqueCards, "images");
+        setUpCards(numberUniqueCards, "icons");
 
         // Set the card actions
         $('#game .card').on({
@@ -205,8 +205,8 @@ $(function(){
     function setUpCards(numberUniqueCards, sourceType) {
         
         if( sourceType == "images" ) {
-            // var images = getImageSources(numberUniqueCards);
-            // renderImages(shuffle($.merge(images, images)));
+            var images = getImageSources(numberUniqueCards);
+            renderImages(shuffle($.merge(images, images)));
         } else {
             // default to icons
             // we use merge which will double up the unicodeIcons
