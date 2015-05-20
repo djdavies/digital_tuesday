@@ -3,8 +3,16 @@
 // © 2014 Nate Wiley
 
 (function(window){
+
+    // Setup sound for game.
     playerShoot = new Audio("audio/191594__fins__laser.wav");
+    dieSound = new Audio("audio/large_explosion_with_trail_off.mp3");
     musicPlayer = document.getElementById("hidden-music-player");
+
+    dieSound.volume = 0.75;
+    playerShoot.volume = 0.5;
+    musicPlayer.volume = 0.5;
+
 
     var Game = {
         // Initialise everything we need to use.
@@ -18,19 +26,27 @@
             this.enemyBullets = [];
             this.enemies = [];
             this.particles = [];
+            // Buffs array.
+            this.buffs = [];
             this.bulletIndex = 0;
             this.enemyBulletIndex = 0;
             this.enemyIndex = 0;
             this.particleIndex = 0;
+            // Index for buffs array
+            this.buffIndex = 0;
             this.maxParticles = 10;
             this.maxEnemies = 6;
+            // Maximum number of buffs
+            this.maxBuffs = 1;
             this.enemiesAlive = 0;
+            // Buffs on currently on screen.
+            this.buffsOnScreen = 0;
             this.currentFrame = 0;
             this.maxLives = 3;
             this.life = 0;
             this.binding();
             this.player = new Player();
-            this.score = 480;
+            this.score = 0;
             this.paused = false;
             this.shooting = false;
             this.oneShot = false;
@@ -203,6 +219,9 @@
             }
         },
 
+        //  Updates the player's health
+
+
         // The main game loop.
         loop: function(){
             // If the game isn't paused, let's go...
@@ -229,6 +248,12 @@
                     Game.bullets[z].draw();
                     Game.bullets[z].update();
                 }
+
+                // Draw Buffs
+                for(var j in Game.buffs) {
+                    Game.buffs[j].draw();
+                    Game.buffs[j].update();
+                } 
 
                 // Draws the player on the screen?
                 if(Game.player.invincible){
@@ -359,6 +384,77 @@
         this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
     };
 
+    // Create a health increase power up
+    var Health = function () {
+        this.width = 60;
+        this.height = 20;
+        this.x = Game.random(0, (Game.c.width - this.width));
+        this.y = Game.random(10, 40);
+        this.vy = Game.random(1, 3) * .1;
+        this.index = Game.buffIndex;
+        Game.buffs[Game.buffIndex] = this;
+        Game.buffIndex++;
+        this.speed = 4;
+        this.movingLeft = Math.random() < 0.5 ? true : false;
+        this.color = "hsla(330, 100%, 50%, 1)";
+    };
+
+    // Draw health icon
+    Health.prototype.draw = function() {
+        Game.ctx.fillStyle = this.color;
+        Game.ctx.fillText("Health", this.x, this.y, this.width);
+    };
+
+    Health.prototype.update = function() {
+        if(this.movingLeft){
+
+            if(this.x > 0){
+                this.x -= this.speed;
+                this.y += this.vy;
+            } else {
+                this.movingLeft = false;
+            }
+
+        } else {
+
+            if(this.x + this.width < Game.c.width){
+                this.x += this.speed;
+                this.y += this.vy;
+            } else {
+                this.movingLeft = true;
+            }
+
+        }
+
+        // Check if bullet collides with buff
+        for(var i in Game.bullets){
+            var currentBuff = Game.bullets[i];
+            
+            if(Game.collision(currentBuff, this)){
+                this.die();
+                delete Game.buffs[i];
+            }
+
+        } 
+    }
+
+    Health.prototype.die = function() {
+        this.explode();
+        dieSound.play();
+        dieSound.currentTime=0;
+        delete Game.buffs[this.index];
+        Game.maxLives += 1;
+        Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
+    };
+
+        // Exploding uses 'Particles', a little explosion animation.
+    Health.prototype.explode = function(){
+        for(var i=0; i<Game.maxParticles; i++){
+            new Particle(this.x + this.width/2, this.y, this.color);
+        }
+    };
+
+
     // Draws the enemy.
     Enemy.prototype.draw = function(){
         Game.ctx.fillStyle = this.color;
@@ -402,6 +498,8 @@
     // Deletes the enemies if the player has hit them, updates player score.
     Enemy.prototype.die = function(){
         this.explode();
+        dieSound.play();
+        dieSound.currentTime=0;
         delete Game.enemies[this.index];
         Game.score += 10;
         Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
@@ -410,6 +508,7 @@
             setTimeout(function(){
                 new Enemy();
             }, 2);
+            new Health();
         }
     };
 
