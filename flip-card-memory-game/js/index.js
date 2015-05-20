@@ -316,13 +316,25 @@ $(function(){
         for( i=0; i<unicodeSources.length; i++ ) {
             //Add the card to the game's canvas/screen
             // force card size to be the correct width and height
-            $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
+            // $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
+            //     +'<div class="flipper">'
+            //         +'<div class="card-hidden"></div>'
+            //         +'<div class="card-visible" data-source="'+unicodeSources[i]+'"/></div>' 
+            //     +'</div>'+
+            // '</div>').appendTo('#game');
+            addCardToCanvas(unicodeSources[i], cardWidthHeight);
+        }
+    }
+
+    function addCardToCanvas(card, cardWidthHeight) {
+        //Add the card tot he game's canvas/screen
+        //force card size to be the correct width and height
+        $('<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
                 +'<div class="flipper">'
-                    +'<div class="card-hidden"></div>'
-                    +'<div class="card-visible" data-source="'+unicodeSources[i]+'"/></div>' 
+                    +'<div class="hide-icon hide-image"></div>'
+                    +'<div class="show-icon show-image" data-source="'+card+'"/></div>' 
                 +'</div>'+
             '</div>').appendTo('#game');
-        }
     }
 
     function getImageSources(numberUniqueCards) {
