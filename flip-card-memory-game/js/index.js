@@ -214,15 +214,17 @@ $(function(){
     }
 
     function setUpCards(numberUniqueCards, sourceType) {
-        
+        console.log(numberUniqueCards);
         if( sourceType == "images" ) {
             var images = getImageSources(numberUniqueCards);
+            console.log("length: " + images.length);
             renderImages(shuffle($.merge(images, images)));
         } else {
             // default to icons
             // we use merge which will double up the unicodeIcons
             // which we then shuffle (so the "cards" are mixed)
             var unicodeIcons = getUnicodeSources(numberUniqueCards);
+            console.log("length: " + unicodeIcons.length);
             unicodeIcons = shuffle($.merge(unicodeIcons, unicodeIcons));
 
             renderUnicodeSources(unicodeIcons);
@@ -308,7 +310,7 @@ $(function(){
     function getUnicodeSources(numberIcons) {
         var unicodeSources = [];
         var unicodeStarter = "&#xf";
-        for( i=1; i<numberIcons+1; i++ ) {
+        for( i=0; i<numberIcons; i++ ) {
             // each icon has the number format: 001, 002 etc. 
             if( i < 10 ) {
                 unicodeSources[i] = unicodeStarter + "00" + i;
@@ -323,7 +325,7 @@ $(function(){
 
     function renderUnicodeSources(unicodeSources) {
         var cardWidthHeight = 100/Math.sqrt(unicodeSources.length);
-        console.log(cardWidthHeight);
+        //console.log(cardWidthHeight);
 
         for( i=0; i<unicodeSources.length; i++ ) {
             addCardToCanvas(unicodeSources[i], cardWidthHeight);
@@ -338,7 +340,7 @@ $(function(){
                                 +'</div>'+
                             '</div>';
 
-        console.log(htmlToRender);
+        //console.log(htmlToRender);
 
         //Add the card tot he game's canvas/screen
         //force card size to be the correct width and height
@@ -348,7 +350,7 @@ $(function(){
     function getImageSources(numberUniqueCards) {
         var imageSources = [];
         // create the url path for each image file in the names array
-        for ( i=1; i <numberUniqueCards+1; i++) {
+        for ( i=0; i <numberUniqueCards; i++) {
             if( i < 10 ) {
                 imageSources[i] = 'images/00' + i + '.png';
             } else if( i > 99 ) {
@@ -362,7 +364,6 @@ $(function(){
 
     function renderImages(imageSources) {
         var cardWidthHeight = 100/Math.sqrt(imageSources.length);
-
         for( i=0; i<imageSources.length; i++ ) {
             //Add the card to the game's canvas/screen
             // force card size to be the correct width and height
