@@ -1,5 +1,8 @@
 $(function(){
 
+    //The number of matches made between card pairs
+    var numberMatches = 0;
+
     function set(key, value) { 
         localStorage.setItem(key, value);
     }
@@ -211,7 +214,7 @@ $(function(){
 
     function addCardsToGameCanvas(shuffledCards) {
         cardWidthHeight = 100/Math.sqrt(shuffledCards.length);
-
+        console.log("the shuffled cards are:" + shuffledCards);
         for (i = 0; i < shuffledCards.length; i++) {
             //Get the current card
             //TODO find out what setting the current card does
@@ -270,6 +273,16 @@ $(function(){
                         .toggleClass('active card found')
                         .empty();
                     increase('flip_matched');
+                    //Increase number of matches between card pairs by 1;
+                    numberMatches ++;
+                    //The number of matches between cards can be fully divided by 3
+                    //so highlight a matching pair from the leftover ones
+
+                    console.log("current number of matches: " + numberMatches);
+                    if (numberMatches == 3); {
+                        highlightCards();
+                        numberMatches = 0;
+                    }
 
                     // if we know there are no more cards left to match in the game, end the game.
                     checkGameEnded(difficulty, startTime);
@@ -279,6 +292,8 @@ $(function(){
                     $('#game .card.active')
                         .removeClass('active'); 
                     increase('flip_wrong');
+                    console.log("current number of matches: " + numberMatches);
+
                 }
             }, 401);
         }
@@ -312,6 +327,10 @@ $(function(){
         });
     }
 
+    function highlightCards() {
+        //Pick a pair of matching cards from the remaining ones and highlight them
+        console.log("number of matches is divisiable by 3 with no remainder" );
+    }
 
     function playAudio () {
         document.getElementById('gameAudio').play();
