@@ -202,9 +202,7 @@ $(function(){
     }
 
     function setUpCards(numberUniqueCards, sourceType) {
-        console.log("METHOD: setUpCards REACHED. "
-            +"PARAMS: numberUniqueCards="+numberUniqueCards + ", sourceType" + sourceType);
-        if( sourceType === "images" ) {
+        if( sourceType == "images" ) {
             var images = getImageSources(numberUniqueCards);
             renderImages(shuffle($.merge(images, images)));
         } else {
@@ -296,7 +294,7 @@ $(function(){
     function getUnicodeSources(numberIcons) {
         var unicodeSources = [];
         var unicodeStarter = "&#xf";
-        for( i=1; i<numberIcons+1; i++ ) {
+        for( i=0; i<numberIcons; i++ ) {
             // each icon has the number format: 001, 002 etc. 
             if( i < 10 ) {
                 unicodeSources[i] = unicodeStarter + "00" + i;
@@ -325,7 +323,7 @@ $(function(){
                                 +'</div>'+
                             '</div>';
 
-        //Add the card tot he game's canvas/screen
+        //Add the card to the game's canvas/screen
         //force card size to be the correct width and height
         $(htmlToRender).appendTo('#game');
     }
@@ -333,7 +331,7 @@ $(function(){
     function getImageSources(numberUniqueCards) {
         var imageSources = [];
         // create the url path for each image file in the names array
-        for ( i=1; i <numberUniqueCards+1; i++) {
+        for ( i=0; i <numberUniqueCards; i++) {
             if( i < 10 ) {
                 imageSources[i] = 'images/00' + i + '.png';
             } else if( i > 99 ) {
