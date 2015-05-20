@@ -214,17 +214,14 @@ $(function(){
     }
 
     function setUpCards(numberUniqueCards, sourceType) {
-        console.log(numberUniqueCards);
         if( sourceType == "images" ) {
             var images = getImageSources(numberUniqueCards);
-            console.log("length: " + images.length);
             renderImages(shuffle($.merge(images, images)));
         } else {
             // default to icons
             // we use merge which will double up the unicodeIcons
             // which we then shuffle (so the "cards" are mixed)
             var unicodeIcons = getUnicodeSources(numberUniqueCards);
-            console.log("length: " + unicodeIcons.length);
             unicodeIcons = shuffle($.merge(unicodeIcons, unicodeIcons));
 
             renderUnicodeSources(unicodeIcons);
@@ -288,7 +285,6 @@ $(function(){
                     $('#game .card.active')
                         .removeClass('active'); 
                     increase('flip_wrong');
-                    console.log("current number of matches: " + numberMatches);
                     numberMatches = 0;
                 }
             }, 401);
@@ -325,7 +321,6 @@ $(function(){
 
     function renderUnicodeSources(unicodeSources) {
         var cardWidthHeight = 100/Math.sqrt(unicodeSources.length);
-        //console.log(cardWidthHeight);
 
         for( i=0; i<unicodeSources.length; i++ ) {
             addCardToCanvas(unicodeSources[i], cardWidthHeight);
@@ -340,9 +335,7 @@ $(function(){
                                 +'</div>'+
                             '</div>';
 
-        //console.log(htmlToRender);
-
-        //Add the card tot he game's canvas/screen
+        //Add the card to the game's canvas/screen
         //force card size to be the correct width and height
         $(htmlToRender).appendTo('#game');
     }
