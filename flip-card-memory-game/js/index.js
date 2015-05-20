@@ -1,16 +1,5 @@
 $(function(){
 
-    // variables
-    var Game = {
-        // Initialise everything we need to use.
-        init: function(){
-            this.board = "";
-            this.difficulty = "";
-            this.sourceType = "icons";
-            this.numberUniqueCards;
-        }
-    };
-
     var difficulty;
     var numberUniqueCards;
     var numberMatches = 0;
@@ -82,10 +71,9 @@ $(function(){
             increase('flip_won');
             decrease('flip_abandoned');
             playAudio();
-        }
-
-        // If lost game
-        else if(text == 'fail'){
+        
+        } else if(text == 'fail'){
+            // If lost game
             increase('flip_lost');
             decrease('flip_abandoned');
             playAudio();
@@ -148,7 +136,7 @@ $(function(){
         var startTime  = $.now();
         pauseAudio();
         
-        setUpCards(numberUniqueCards, "icons");
+        setUpCards(numberUniqueCards, "images");
 
         // Set the card actions
         $('#game .card').on({
@@ -214,8 +202,9 @@ $(function(){
     }
 
     function setUpCards(numberUniqueCards, sourceType) {
-        
-        if( sourceType == "images" ) {
+        console.log("METHOD: setUpCards REACHED. "
+            +"PARAMS: numberUniqueCards="+numberUniqueCards + ", sourceType" + sourceType);
+        if( sourceType === "images" ) {
             var images = getImageSources(numberUniqueCards);
             renderImages(shuffle($.merge(images, images)));
         } else {
@@ -286,7 +275,6 @@ $(function(){
                     $('#game .card.active')
                         .removeClass('active'); 
                     increase('flip_wrong');
-                    console.log("current number of matches: " + numberMatches);
                     numberMatches = 0;
                 }
             }, 401);
@@ -322,23 +310,20 @@ $(function(){
     }
 
     function renderUnicodeSources(unicodeSources) {
-        var cardWidthHeight = 100/Math.sqrt(unicodeSources.length);
-        console.log(cardWidthHeight);
-
+        var cardSideLength = 100/Math.sqrt(unicodeSources.length);
+        
         for( i=0; i<unicodeSources.length; i++ ) {
-            addCardToCanvas(unicodeSources[i], cardWidthHeight);
+            addCardToCanvas(unicodeSources[i], cardSideLength);
         }
     }
 
-    function addCardToCanvas(card, cardWidthHeight) {
-        var htmlToRender = '<div class="card" style="width:'+cardWidthHeight+'%;height:'+cardWidthHeight+'%;">'
+    function addCardToCanvas(card, cardSideLength) {
+        var htmlToRender = '<div class="card" style="width:'+cardSideLength+'%;height:'+cardSideLength+'%;">'
                                 +'<div class="flipper">'
                                     +'<div class="hide-icon"></div>'
                                     +'<div class="show-icon" data-source="'+card+'"/></div>' 
                                 +'</div>'+
                             '</div>';
-
-        console.log(htmlToRender);
 
         //Add the card tot he game's canvas/screen
         //force card size to be the correct width and height
@@ -361,16 +346,17 @@ $(function(){
     }
 
     function renderImages(imageSources) {
-        var cardWidthHeight = 100/Math.sqrt(imageSources.length);
+        var cardSideLength = 100/Math.sqrt(imageSources.length);
 
         for( i=0; i<imageSources.length; i++ ) {
             //Add the card to the game's canvas/screen
             // force card size to be the correct width and height
-            $('<div class="card" style="width:'+cardWidthHeight+'%; height:'+cardWidthHeight+'%;">'
+            $('<div class="card" style="width:'+cardSideLength+'%; height:'+cardSideLength+'%;">'
                 +'<div class="container" style="overflow:hidden;">'
                     +'<div class="flipper">'
                         +'<div class="hide-image"></div>'
-                        +'<img class="show-image" src="'+imageSources[i]+'" style="align:middle;"/>' 
+                        +'<img class="show-image" src="'+imageSources[i]+'" '
+                            +'style="width:100%; height:100%; align:middle;"/>' 
                     +'</div>'
                 +'</div>'
             +'</div>').appendTo('#game');
