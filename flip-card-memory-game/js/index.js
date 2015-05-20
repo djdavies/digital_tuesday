@@ -258,7 +258,7 @@ $(function(){
                     //so highlight a matching pair from the leftover ones
 
                     console.log("current number of matches: " + numberMatches);
-                    if (numberMatches == 3); {
+                    if (numberMatches == 3) {
                         highlightCards();
                         numberMatches = 0;
                     }
@@ -272,7 +272,7 @@ $(function(){
                         .removeClass('active'); 
                     increase('flip_wrong');
                     console.log("current number of matches: " + numberMatches);
-
+                    numberMatches = 0;
                 }
             }, 401);
         }
