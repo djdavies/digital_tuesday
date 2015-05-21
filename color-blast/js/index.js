@@ -159,7 +159,7 @@
             }, s);
         },
 
-        // Collision detection?
+        // Collision detection.
         collision: function(a, b){
             return !(
                 ((a.y + a.height) < (b.y)) ||
@@ -176,7 +176,7 @@
         },
 
         // User clicks to pause. 
-        //  Bools for the pause feature... 
+        // Bools for the pause feature... 
         pause: function(){
             this.paused = true;
         },
@@ -212,9 +212,6 @@
             this.ctx.fillText("Lives: " + (this.maxLives - this.life), 8, 40);
         },
 
-        //  Updates the player's health
-
-
         // The main game loop.
         loop: function(){
             // If the game isn't paused, let's go...
@@ -230,19 +227,19 @@
                     }
                 }
 
-                // Draws the enemy bullets.
+                // Draws & update the enemy bullets.
                 for(var x in Game.enemyBullets){
                     Game.enemyBullets[x].draw();
                     Game.enemyBullets[x].update();
                 }
 
-                // The user's ship bullets?
+                // Draws & update bullets on screen.
                 for(var z in Game.bullets){
                     Game.bullets[z].draw();
                     Game.bullets[z].update();
                 }
 
-                // Draw Buffs
+                // Draws & update buffs on screen.
                 for(var j in Game.buffs) {
                     Game.buffs[j].draw();
                     Game.buffs[j].update();
@@ -257,7 +254,7 @@
                     Game.player.draw();
                 }
 
-                // Make a buff appear on the screen
+                // Make a buff appear on the screen.
                 var randomInt  = Game.random(1,1500);
                 if (randomInt === 1) {
                     var buff = new Buff();
@@ -326,7 +323,7 @@
             this.shoot();
         }
 
-        // Determines whether enemyBullets hit the player?
+        // Determines whether enemyBullets hit the player.
         for(var i in Game.enemyBullets){
             var currentBullet = Game.enemyBullets[i];
             if(Game.collision(currentBullet, this) && !Game.player.invincible){
@@ -357,14 +354,13 @@
         this.color = "white";
     };
 
-
     // Draws the bullet.
     Bullet.prototype.draw = function(){
         Game.ctx.fillStyle = this.color;
         Game.ctx.fillRect(this.x, this.y, this.width, this.height);
     };
 
-    // Not sure...
+    // Update bullets so that it travels down the screen.
     Bullet.prototype.update = function(){
         this.y -= this.vy;
         if(this.y < 0){
@@ -372,7 +368,7 @@
         }
     };
 
-    // Create a health increase power up
+    // Create a buff.
     var Buff = function () {
         this.width = 30;
         this.height = 10;
@@ -397,7 +393,7 @@
         }
     };
 
-    // Draw health icon
+    // Draw buff depending on the randomised buff type.
     Buff.prototype.draw = function() {
         Game.ctx.fillStyle = this.color;
         Game.ctx.font = "25px Arial";
@@ -411,6 +407,7 @@
         }
     };
 
+    // Update the buff location on the screen.
     Buff.prototype.update = function() {
         if(this.movingLeft){
 
@@ -432,7 +429,7 @@
 
         }
 
-        // Check if bullet collides with buff
+        // Check if bullet collides with buff.
         for(var i in Game.bullets){
             var currentBuff = Game.bullets[i];
             
@@ -440,10 +437,10 @@
                 this.die();
                 delete Game.bullets[i];
             }
-
         } 
     }
 
+    // When buff collides with player's buff apply the buff.
     Buff.prototype.die = function() {
         this.explode();
         dieSound.play();
@@ -462,6 +459,7 @@
         Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
     };
 
+    // When buff disppear delete the buff from buff array.
     Buff.prototype.disappear = function() {
         delete Game.buffs[this.index];
         Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
