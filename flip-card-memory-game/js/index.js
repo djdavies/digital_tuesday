@@ -1,7 +1,7 @@
 $(function(){
 
     var difficulty;
-    var sourceType = "images"; // or icons
+    var sourceType = "icons"; // icons OR images
     var numberUniqueCards;
     var numberMatches = 0;
 
@@ -31,6 +31,7 @@ $(function(){
         updateStats();
     };
 
+    // play audio on landing page
     playAudio();
     
     // Start game
@@ -51,8 +52,6 @@ $(function(){
     });
 
     function playGame(numberUniqueCards) {
-        // TODO remove active classes for menu cards
-
         var startTime  = $.now();
         pauseAudio();
         
@@ -70,8 +69,12 @@ $(function(){
                 // set this card to be active
                 thisCard.addClass('active');
                 
+                // temporarily remove the active class from the Start menu cards
+                $('.c2').parents('.show-icon.hide-icon').toggleClass('show-icon');
+
                 // default to icons
-                var numberActiveCards = $('.card.active .show-icon').length;
+                var numberActiveCards = $('.card.active .show-icon').length; //2
+                console.log("#active cards" + numberActiveCards );
                 //TODO SHOULD BE 0 but menu card increments this to 1 on start
                 if( sourceType == "images" ) {
                     numberActiveCards = $('.card.active.card-images').length;
@@ -79,10 +82,10 @@ $(function(){
 
                 if( numberActiveCards == 2 ) {
                     checkForMatchingCards(startTime);
-                } else {
-                    //TODO set timeout and flip the card back to hidden
                 }
-                numberActiveCards = 0;
+
+                //re-add active class to the Start menu card
+                $('.c2').parents('.show-icon.hide-icon').toggleClass('show-icon');
             }
         });
 
@@ -126,10 +129,9 @@ $(function(){
             var cardSource2;
 
             if( sourceType == "icons" ) {
-                var sourceCards = $('.card.active .show-icon');
-
-                cardSource1 = sourceCards[0].data('source');
-                cardSource2 = sourceCards[1].data('source');
+                console.log($('.card.active .show-icon').length);
+                cardSource1 = $('.card.active .show-icon')[0].data("source");
+                cardSource2 = $('.card.active .show-icon')[1].data("source");
             
             } else if ( sourceType == "images" ) {
                 cardSource1 = $(".card.active img")[0].src;
