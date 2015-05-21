@@ -3,8 +3,16 @@
 // © 2014 Nate Wiley
 
 (function(window){
+
+    // Setup sounds for game.
     playerShoot = new Audio("audio/191594__fins__laser.wav");
+    dieSound = new Audio("audio/large_explosion_with_trail_off.mp3");
     musicPlayer = document.getElementById("hidden-music-player");
+
+    // Change the audio volume of each.
+    dieSound.volume = 0.75;
+    playerShoot.volume = 0.5;
+    musicPlayer.volume = 0.5;
 
     var Game = {
         // Initialise everything we need to use.
@@ -21,15 +29,22 @@
             this.enemies = [];
             // Explosive effect of enemy death.
             this.particles = [];
+            // Buffs array.
+            this.buffs = [];
             this.bulletIndex = 0;
             this.enemyBulletIndex = 0;
             this.enemyIndex = 0;
             this.particleIndex = 0;
+            // Index for buffs array
+            this.buffIndex = 0;
             this.maxParticles = 10;
             
 
             this.maxEnemies = 6;
             this.enemiesAlive = 0;
+
+            // Buffs on currently on screen.
+            this.buffsOnScreen = 0;
 
             // Maximum # of boss' on screen.
             this.maxBossEnemies = 1;
@@ -45,7 +60,7 @@
             this.life = 0;
             this.binding();
             this.player = new Player();
-            this.score = 5980;
+            this.score = 0;
             this.paused = false;
             this.shooting = false;
             this.oneShot = false;
@@ -160,7 +175,7 @@
             }, s);
         },
 
-        // Collision detection?
+        // Collision detection.
         collision: function(a, b){
             return !(
                 ((a.y + a.height) < (b.y)) ||
@@ -177,7 +192,7 @@
         },
 
         // User clicks to pause. 
-        //  Bools for the pause feature... 
+        // Bools for the pause feature... 
         pause: function(){
             this.paused = true;
         },
@@ -235,25 +250,40 @@
                     }
                 }
 
-                // Draws the enemy bullets.
+                // Draws & update the enemy bullets.
                 for(var x in Game.enemyBullets){
                     Game.enemyBullets[x].draw();
                     Game.enemyBullets[x].update();
                 }
 
-                // The user's ship bullets?
+                // Draws & update bullets on screen.
                 for(var z in Game.bullets){
                     Game.bullets[z].draw();
                     Game.bullets[z].update();
                 }
 
-                // Draws the player on the screen?
+                // Draws & update buffs on screen.
+                for(var j in Game.buffs) {
+                    Game.buffs[j].draw();
+                    Game.buffs[j].update();
+                } 
+
+                // Creates flashing animation to indicate player in invisible mode.
                 if(Game.player.invincible){
                     if(Game.currentFrame % 20 === 0){
                         Game.player.draw();
                     }
                 } else {
                     Game.player.draw();
+                }
+
+                // Make a buff appear on the screen.
+                var randomInt  = Game.random(1,1500);
+                if (randomInt === 1) {
+                    var buff = new Buff();
+                    setTimeout(function() {
+                        buff.disappear();
+                    }, 5000);
                 }
 
                 // "Particicles are enemies exploding" -- Luke.
@@ -289,6 +319,7 @@
         if(Game.life < Game.maxLives){
             Game.invincibleMode(2000);  
             Game.life++;
+            this.speed = 8;
         } else {
             Game.pause();
             Game.gameOver();
@@ -315,7 +346,7 @@
             this.shoot();
         }
 
-        // Determines whether enemyBullets hit the player?
+        // Determines whether enemyBullets hit the player.
         for(var i in Game.enemyBullets){
             var currentBullet = Game.enemyBullets[i];
             if(Game.collision(currentBullet, this) && !Game.player.invincible){
@@ -329,6 +360,7 @@
     Player.prototype.shoot = function(){
         Game.bullets[Game.bulletIndex] = new Bullet(this.x + this.width/2);
         Game.bulletIndex++;
+
         playerShoot.play();
         playerShoot.currentTime=0;
     };
@@ -345,18 +377,121 @@
         this.color = "white";
     };
 
-
     // Draws the bullet.
     Bullet.prototype.draw = function(){
         Game.ctx.fillStyle = this.color;
         Game.ctx.fillRect(this.x, this.y, this.width, this.height);
     };
 
-    // Not sure...
+    // Update bullets so that it travels down the screen.
     Bullet.prototype.update = function(){
         this.y -= this.vy;
         if(this.y < 0){
             delete Game.bullets[this.index];
+        }
+    };
+
+    // Create a buff.
+    var Buff = function () {
+        this.width = 30;
+        this.height = 10;
+        this.x = Game.random(0, (Game.c.width - this.width));
+        this.y = Game.random(10, 40);
+        this.vy = Game.random(1, 3) * .1;
+        this.index = Game.buffIndex;
+        Game.buffs[Game.buffIndex] = this;
+        Game.buffIndex++;
+        this.speed = 5;
+        this.movingLeft = Math.random() < 0.5 ? true : false;
+        this.buffType = Math.random() < 0.5 ? "health" : "speed";
+
+        // Change the buff colour depending on the buff.
+        switch (this.buffType) {
+                case "health":
+                    this.color = "hsla(330, 100%, 50%, 1)";
+                    break;
+                case "speed":
+                    this.color = "hsla(56, 100%, 50%, 1)";
+                    break;
+        }
+    };
+
+    // Draw buff depending on the randomised buff type.
+    Buff.prototype.draw = function() {
+        Game.ctx.fillStyle = this.color;
+        Game.ctx.font = "25px Arial";
+        switch (this.buffType) {
+                case "health":
+                    Game.ctx.fillText("\u2764", this.x, this.y, this.width);
+                    break;
+                case "speed":
+                    Game.ctx.fillText("\u26A1", this.x, this.y, this.width);
+                    break;
+        }
+    };
+
+    // Update the buff location on the screen.
+    Buff.prototype.update = function() {
+        if(this.movingLeft){
+
+            if(this.x > 0){
+                this.x -= this.speed;
+                this.y += this.vy;
+            } else {
+                this.movingLeft = false;
+            }
+
+        } else {
+
+            if(this.x + this.width < Game.c.width){
+                this.x += this.speed;
+                this.y += this.vy;
+            } else {
+                this.movingLeft = true;
+            }
+
+        }
+
+        // Check if bullet collides with buff.
+        for(var i in Game.bullets){
+            var currentBuff = Game.bullets[i];
+            
+            if(Game.collision(currentBuff, this)){
+                this.die();
+                delete Game.bullets[i];
+            }
+        } 
+    }
+
+    // When buff collides with player's buff apply the buff.
+    Buff.prototype.die = function() {
+        this.explode();
+        dieSound.play();
+        dieSound.currentTime=0;
+        delete Game.buffs[this.index];
+
+        // Activiate buff depending on type.
+        switch (this.buffType) {
+                case "health":
+                    Game.maxLives += 1;
+                    break;
+                case "speed":
+                    Game.player.speed = 16;
+                    break;
+        }
+        Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
+    };
+
+    // When buff disppear delete the buff from buff array.
+    Buff.prototype.disappear = function() {
+        delete Game.buffs[this.index];
+        Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
+    }
+
+        // Exploding uses 'Particles', a little explosion animation.
+    Buff.prototype.explode = function(){
+        for(var i=0; i<Game.maxParticles; i++){
+            new Particle(this.x + this.width/2, this.y, this.color);
         }
     };
 
@@ -464,43 +599,20 @@
     Enemy.prototype.die = function(){
         this.explode();
         delete Game.enemies[this.index];
+        dieSound.play();
         Game.score += 10;
-
-        // Here comes the boss...
-        if(Game.score % 3000 === 0){
-            console.log("Your score is (should be > 3k)" + this.score);
-            Game.isBossEnemy = true;
-        } else {
-            Game.isBossEnemy = false;
+        Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
+        while (Game.enemiesAlive < Game.maxEnemies){
+            Game.enemiesAlive++;
+            setTimeout(function() {
+                    new Enemy();
+            }, 2000);
         }
 
-        // For normal enemies...
-        if(!Game.isBossEnemy) {
-            // If >1, decrement by 1; otherwise if 0, keep it 0.
-            Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
-
-            // Keep producing enemies, if the number alive is less than the max (6).
-            while(Game.enemiesAlive < Game.maxEnemies){
-                Game.enemiesAlive++;
-                setTimeout(function(){
-                    new Enemy();
-                }, 2);
-            }
-
-          // For boss enemies (once score > 3k).
-        } else {
-            console.log("Here's a boss!");
-
-            // While the boss is alive, and is less than the value of the maximum (1), produce one.
-            while(Game.bossEnemiesAlive < Game.maxBossEnemies){
-                console.log("Boss while loop:" + Game.bossEnemiesAlive +""+ Game.maxBossEnemies);
-                // Boss is now alive...
-                Game.bossEnemiesAlive++;
-                setTimeout(function(){
-                    new Enemy();
-                    Game.isBossEnemy = false;
-                }, 2);
-            }
+        // // Adds more enemies everytime player scores another 500 points.
+        if(Game.score % 500 === 0 ){
+            Game.maxEnemies++;
+            console.log("max=" + Game.maxEnemies);
         }
     };
 
