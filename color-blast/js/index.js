@@ -499,7 +499,6 @@
     var Enemy = function(){
         // Normal enemies, if isBossEnemy = false.
         if (!Game.isBossEnemy) {
-            console.log("Producing normal enemies.");
             this.width = 60;
             this.height = 20;
             this.shootingSpeed = Game.random(30, 80);
@@ -507,18 +506,12 @@
             this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
             this.health = 1;
             this.isABoss = false;
-          // Boss enemies, if isBossEnemy = true.
         } else {
-            console.log("Producing a boss...");
+              // Boss enemies, if isBossEnemy = true.
             this.width = 360;
             this.height = 120;
-            if(Game.currentFrame % 3 === 0) {
-                // break in lazor-shootan'.
-                this.shootingSpeed = 600;
-            } else {
-                // LAZORS!!
-                this.shootingSpeed = Game.random(1, 1);
-            }    
+            // LAZORS!!
+            this.shootingSpeed = Game.random(1, 1);
             this.speed = 20;
             this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
             this.health = 500;
@@ -601,18 +594,33 @@
         delete Game.enemies[this.index];
         dieSound.play();
         Game.score += 10;
-        Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
-        while (Game.enemiesAlive < Game.maxEnemies){
-            Game.enemiesAlive++;
-            setTimeout(function() {
+        Game.isBossEnemy = (Game.score % 3000 === 0) ? true : false;
+
+        // For normal enemies...
+        if(!Game.isBossEnemy) {
+            // If >1, decrement by 1; otherwise if 0, keep it 0.
+            Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
+
+            // Keep producing enemies, if the number alive is less than the max (6).
+            while(Game.enemiesAlive < Game.maxEnemies){
+                Game.enemiesAlive++;
+                setTimeout(function(){
                     new Enemy();
             }, 2000);
         }
 
-        // // Adds more enemies everytime player scores another 500 points.
-        if(Game.score % 500 === 0 ){
-            Game.maxEnemies++;
-            console.log("max=" + Game.maxEnemies);
+          // For boss enemies (once score > 3k).
+        } else {
+
+            // While the boss is alive, and is less than the value of the maximum (1), produce one.
+            if (Game.bossEnemiesAlive < Game.maxBossEnemies){
+                // Boss is now alive...
+                Game.bossEnemiesAlive++;
+                setTimeout(function(){
+                    new Enemy();
+                    Game.isBossEnemy = false;
+                }, 2);
+            }
         }
     };
 
@@ -628,8 +636,10 @@
         if(!this.isABoss){
             new EnemyBullet(this.x + this.width/2, this.y, this.color);
         } else {
-            console.log("Boss is shooting...");
-            new EnemyBullet(this.x + this.width/2, this.y + this.height/2, this.color);
+            var random = Math.random();
+            if (random > 0.80) {
+                new EnemyBullet(this.x + this.width/2, this.y + this.height/2, this.color);
+            }
         }
     };
 
@@ -640,7 +650,6 @@
         this.x = x;
         this.y = y;
         this.vy = (this.isABoss) ? Game.random(8, 13) : 6;
-   
         this.color = color;
         this.index = Game.enemyBulletIndex;
         Game.enemyBullets[Game.enemyBulletIndex] = this;
