@@ -22,9 +22,12 @@
             this.c.height = this.c.height;
             this.ctx = this.c.getContext("2d");
             this.color = "rgba(20,20,20,.7)";
+            // Player's bullets.
             this.bullets = [];
+            // Enemy's bullets.
             this.enemyBullets = [];
             this.enemies = [];
+            // Explosive effect of enemy death.
             this.particles = [];
             // Buffs array.
             this.buffs = [];
@@ -35,10 +38,23 @@
             // Index for buffs array
             this.buffIndex = 0;
             this.maxParticles = 10;
+            
+
             this.maxEnemies = 6;
             this.enemiesAlive = 0;
+
             // Buffs on currently on screen.
             this.buffsOnScreen = 0;
+
+            // Maximum # of boss' on screen.
+            this.maxBossEnemies = 1;
+
+            // Is the boss alive?
+            this.bossEnemiesAlive = 0;
+
+            // Conditional boolean: do we want boss enemies or normal?
+            this.isBossEnemy = false;
+            
             this.currentFrame = 0;
             this.maxLives = 3;
             this.life = 0;
@@ -52,7 +68,7 @@
             // Requests animation frames for multiple browser rendering engines.
             this.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
             
-            // Add enemies into the game (maxEnemies=6).
+            // Add enemies into the game.
             for(var i = 0; i<this.maxEnemies; i++){
                 new Enemy();
                 this.enemiesAlive++;
@@ -190,6 +206,7 @@
         gameOver: function(){
             // Reset background music.
             musicPlayer.pause();
+            // TODO: game over sound.
             this.isGameOver = true;
             this.clear();
             var message = "Game Over";
@@ -210,6 +227,12 @@
             this.ctx.font = "16px Lato, sans-serif";
             this.ctx.fillText("Score: " + this.score, 8, 20);
             this.ctx.fillText("Lives: " + (this.maxLives - this.life), 8, 40);
+
+            // Adds more enemies everytime player scores another 457 points.
+            if(Game.score % 457 === 0){
+                Game.maxEnemies = (this.score / 457)*2 + Game.enemiesAlive;
+                Game.isBossEnemy = false;
+            }
         },
 
         // The main game loop.
@@ -221,7 +244,7 @@
                     var currentEnemy = Game.enemies[i];
                     currentEnemy.draw();
                     currentEnemy.update();
-                    // Makes the enemies shoot?
+                    // Makes the enemies shoot.
                     if(Game.currentFrame % currentEnemy.shootingSpeed === 0){
                         currentEnemy.shoot();
                     }
@@ -474,18 +497,34 @@
 
     // Initialises the enemy/enemies (they're all the same).
     var Enemy = function(){
-        this.width = 60;
-        this.height = 20;
+        // Normal enemies, if isBossEnemy = false.
+        if (!Game.isBossEnemy) {
+            this.width = 60;
+            this.height = 20;
+            this.shootingSpeed = Game.random(30, 80);
+            this.speed = Game.random(2, 3);
+            this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
+            this.health = 1;
+            this.isABoss = false;
+        } else {
+              // Boss enemies, if isBossEnemy = true.
+            this.width = 360;
+            this.height = 120;
+            // LAZORS!!
+            this.shootingSpeed = Game.random(1, 1);
+            this.speed = 20;
+            this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
+            this.health = 500;
+            this.isABoss = true;
+        }
+
         this.x = Game.random(0, (Game.c.width - this.width));
         this.y = Game.random(10, 40);
         this.vy = Game.random(1, 3) * .1;
         this.index = Game.enemyIndex;
         Game.enemies[Game.enemyIndex] = this;
         Game.enemyIndex++;
-        this.speed = Game.random(2, 3);
-        this.shootingSpeed = Game.random(30, 80);
         this.movingLeft = Math.random() < 0.5 ? true : false;
-        this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
     };
 
     // Draws the enemy.
@@ -496,33 +535,55 @@
 
     // Update the x and y coordinates 
     Enemy.prototype.update = function(){
-        if(this.movingLeft){
+        if(this.isABoss == false) {
+            if(this.movingLeft){
 
-            if(this.x > 0){
-                this.x -= this.speed;
-                this.y += this.vy;
+                if(this.x > 0){
+                    this.x -= this.speed;
+                    this.y += this.vy;
+                } else {
+                    this.movingLeft = false;
+                }
+
             } else {
-                this.movingLeft = false;
+                if(this.x + this.width < Game.c.width){
+                    this.x += this.speed;
+                    this.y += this.vy;
+                } else {
+                    this.movingLeft = true;
+                }
             }
+         } else {
+            if(this.movingLeft){
 
-        } else {
-            
-            if(this.x + this.width < Game.c.width){
-                this.x += this.speed;
-                this.y += this.vy;
+                if(this.x > 0){
+                    this.x -= this.speed;
+                } else {
+                    this.movingLeft = false;
+                }
+
             } else {
-                this.movingLeft = true;
+                if(this.x + this.width < Game.c.width){
+                    this.x += this.speed;
+                } else {
+                    this.movingLeft = true;
+                }
             }
-
         }
-        
+
         // Determines whether a bullet hits the player?
         for(var i in Game.bullets){
             var currentBullet = Game.bullets[i];
             
             if(Game.collision(currentBullet, this)){
-                this.die();
-                delete Game.bullets[i];
+                // If you've hit him...
+                this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
+                console.log("Health is: " + this.health);
+                this.health--;
+                if (this.health === 0) {
+                    this.die();
+                    delete Game.bullets[i];
+                }
             }
         } 
     };
@@ -533,18 +594,33 @@
         delete Game.enemies[this.index];
         dieSound.play();
         Game.score += 10;
-        Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
-        while (Game.enemiesAlive < Game.maxEnemies){
-            Game.enemiesAlive++;
-            setTimeout(function() {
+        Game.isBossEnemy = (Game.score % 3000 === 0) ? true : false;
+
+        // For normal enemies...
+        if(!Game.isBossEnemy) {
+            // If >1, decrement by 1; otherwise if 0, keep it 0.
+            Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
+
+            // Keep producing enemies, if the number alive is less than the max (6).
+            while(Game.enemiesAlive < Game.maxEnemies){
+                Game.enemiesAlive++;
+                setTimeout(function(){
                     new Enemy();
             }, 2000);
         }
 
-        // // Adds more enemies everytime player scores another 500 points.
-        if(Game.score % 500 === 0 ){
-            Game.maxEnemies++;
-            console.log("max=" + Game.maxEnemies);
+          // For boss enemies (once score > 3k).
+        } else {
+
+            // While the boss is alive, and is less than the value of the maximum (1), produce one.
+            if (Game.bossEnemiesAlive < Game.maxBossEnemies){
+                // Boss is now alive...
+                Game.bossEnemiesAlive++;
+                setTimeout(function(){
+                    new Enemy();
+                    Game.isBossEnemy = false;
+                }, 2);
+            }
         }
     };
 
@@ -557,7 +633,14 @@
 
     // Create a new enemy bullet on the enemy shoot function.
     Enemy.prototype.shoot = function(){
-        new EnemyBullet(this.x + this.width/2, this.y, this.color);
+        if(!this.isABoss){
+            new EnemyBullet(this.x + this.width/2, this.y, this.color);
+        } else {
+            var random = Math.random();
+            if (random > 0.80) {
+                new EnemyBullet(this.x + this.width/2, this.y + this.height/2, this.color);
+            }
+        }
     };
 
     // Initialises enemy bullet properties.
@@ -566,7 +649,7 @@
         this.height = 20;
         this.x = x;
         this.y = y;
-        this.vy = 6;
+        this.vy = (this.isABoss) ? Game.random(8, 13) : 6;
         this.color = color;
         this.index = Game.enemyBulletIndex;
         Game.enemyBullets[Game.enemyBulletIndex] = this;
