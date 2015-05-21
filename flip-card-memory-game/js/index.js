@@ -51,6 +51,8 @@ $(function(){
     });
 
     function playGame(numberUniqueCards) {
+        // TODO remove active classes for menu cards
+
         var startTime  = $.now();
         pauseAudio();
         
@@ -68,12 +70,19 @@ $(function(){
                 // set this card to be active
                 thisCard.addClass('active');
                 
-                // default source type: icons
-                var cardValue = thisCard.find('.show-icon').attr('data-source');
+                // default to icons
+                var numberActiveCards = $('.card.active .show-icon').length;
+                //TODO SHOULD BE 0 but menu card increments this to 1 on start
                 if( sourceType == "images" ) {
-                    cardValue = thisCard.find('.show-image').attr('data-source');
+                    numberActiveCards = $('.card.active.card-images').length;
                 }
-                checkForMatchingCards(cardValue, startTime);
+
+                if( numberActiveCards == 2 ) {
+                    checkForMatchingCards(startTime);
+                } else {
+                    //TODO set timeout and flip the card back to hidden
+                }
+                numberActiveCards = 0;
             }
         });
 
@@ -110,44 +119,57 @@ $(function(){
         playAudio();
     }
 
-    function checkForMatchingCards(cardValue, startTime) {
-        // get collection of all cards with the matching pattern 
-        // (e.g. A and A)
-        var selectedCards = $('#game .active .show-icon[data-source='+cardValue+']');
-        
-        if( $('#game').find('.card.active').length > 1){
-            setTimeout(function(){
+    function checkForMatchingCards(startTime) {
+        setTimeout(function(){
+            // get out an array sources of the active cards
+            var cardSource1;
+            var cardSource2;
 
-                if( selectedCards.length > 1 ) {
-                    // we know the cards match
-                    // so remove them from the board
-                    selectedCards.parents('.card')
+            if( sourceType == "icons" ) {
+                var sourceCards = $('.card.active .show-icon');
+
+                cardSource1 = sourceCards[0].data('source');
+                cardSource2 = sourceCards[1].data('source');
+            
+            } else if ( sourceType == "images" ) {
+                cardSource1 = $(".card.active img")[0].src;
+                cardSource2 = $(".card.active img")[1].src;
+            }
+            
+            if( cardSource1 == cardSource2 ) {
+                // the cards match, remove them from the board
+                if( sourceType == "icons") {
+                    $('.card.active .show-icon').parents('.card.active')
                         .toggleClass('active card found')
                         .empty();
-                    increase('flip_matched');
-                    //Increase number of consecutive matches between card pairs by 1;
-                    numberMatches ++;
+                }
+                else if( sourceType == "images" ) {
+                    $('.card.active img').parents('.card-images')
+                        .toggleClass('active card found')
+                        .empty();
+                }
+                increase('flip_matched');
+                //Increase number of consecutive matches between card pairs by 1;
+                numberMatches ++;
 
-                    if (numberMatches == 3) {
-                        //The number of matches between cards consecutively is 3
-                        //so we temporarily flip all leftover cards on the game board
-                        flashAllCards();
-                        //then reset the counter
-                        numberMatches = 0;
-                    }
-
-                    // if we know there are no more cards left to match in the game, end the game.
-                    checkGameEnded(difficulty, startTime);
-                } else {
-                    // we know the cards are different 
-                    // fail
-                    $('#game .card.active')
-                        .removeClass('active'); 
-                    increase('flip_wrong');
+                if (numberMatches == 3) {
+                    //The number of matches between cards consecutively is 3
+                    //so we temporarily flip all leftover cards on the game board
+                    flashAllCards();
+                    //then reset the counter
                     numberMatches = 0;
                 }
-            }, 401);
-        }
+
+                // if we know there are no more cards left to match in the game, end the game.
+                checkGameEnded(difficulty, startTime);
+            } else {
+                // no match, so flip the cards back over
+                $('#game .card.active')
+                    .removeClass('active'); 
+                increase('flip_wrong');
+                numberMatches = 0;
+            }
+        }, 401);
     }
 
     function removeMatchedCardPair(card1, card2) {
