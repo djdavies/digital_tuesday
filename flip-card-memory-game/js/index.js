@@ -1,7 +1,7 @@
 $(function(){
 
     var difficulty;
-    var sourceType = "images"; // or icons
+    var sourceType = "images"; // images or icons
     var numberUniqueCards;
     var numberMatches = 0;
 
@@ -18,12 +18,14 @@ $(function(){
         if(text == 'nice'){
             increase('flip_won');
             decrease('flip_abandoned');
+            //TASK (ADD AUDIO ON END OF GAME)
             playAudio();
         
         } else if(text == 'fail'){
             // If lost game
             increase('flip_lost');
             decrease('flip_abandoned');
+            //TASK (ADD AUDIO ON END OF GAME)
             playAudio();
         }
 
@@ -47,18 +49,18 @@ $(function(){
 
         // start the actual game
         $('.logo').fadeOut(250, playGame(numberUniqueCards));
-
     });
 
     function playGame(numberUniqueCards) {
         // TODO remove active classes for menu cards
 
+        // get the current time
         var startTime  = $.now();
         pauseAudio();
         
         setUpCards(numberUniqueCards);
 
-        // Set the card actions
+        // set the card actions
         $('#game .card').on({
             'mousedown' : function(){
                 // if game paused do nothing
@@ -72,7 +74,7 @@ $(function(){
                 
                 // default to icons
                 var numberActiveCards = $('.card.active .show-icon').length;
-                //TODO SHOULD BE 0 but menu card increments this to 1 on start
+                
                 if( sourceType == "images" ) {
                     numberActiveCards = $('.card.active.card-images').length;
                 }
@@ -80,7 +82,7 @@ $(function(){
                 if( numberActiveCards == 2 ) {
                     checkForMatchingCards(startTime);
                 } else {
-                    //TODO set timeout and flip the card back to hidden
+                    // TODO set timeout and flip the card back to hidden
                 }
                 numberActiveCards = 0;
             }
@@ -150,9 +152,9 @@ $(function(){
                 }
                 increase('flip_matched');
                 //Increase number of consecutive matches between card pairs by 1;
-                numberMatches ++;
+                numberMatches++;
 
-                if (numberMatches == 3) {
+                if (numberMatches == 1) {
                     //The number of matches between cards consecutively is 3
                     //so we temporarily flip all leftover cards on the game board
                     flashAllCards();
@@ -274,15 +276,15 @@ $(function(){
     /* TASK: ADD A HINT - AFTER THREE CONSECUTIVE MATCHES FLASH ALL THE CARDS */
     function flashAllCards() {
         //Flip all the cards in the game for 0.3 seconds before hiding them
-        $( '.card' ).addClass( 'active').delay( 300 ).queue(function() {
-            $(this).removeClass( 'active');
+        $( '.card' ).addClass('active').delay( 300 ).queue(function() {
+            $(this).removeClass('active');
             $(this).dequeue();
         });
     }
 
     /* TASK: ADD AUDIO TO THE GAME */
     function playAudio () {
-        //document.getElementById('gameAudio').play();
+        //document.getElementById('#gameAudio').play();
         //song.play();
     }
 
