@@ -227,14 +227,6 @@ $(function(){
         $(htmlToRender).appendTo('#game');
     }
 
-    function showImage() {
-        addClass('card-')
-    }
-
-    function hideImage() {
-
-    }
-
     /* TASK: USE IMAGES INSTEAD OF ICONS */
     function getImageSources(numberUniqueCards) {
         var imageSources = [];
@@ -258,6 +250,7 @@ $(function(){
         var cardSideLength = 100/Math.sqrt(imageSources.length);
 
         for( i=0; i<imageSources.length; i++ ) {
+            console.log("image source" + imageSources[i]);
             addImageCard(imageSources[i], cardSideLength);
         }
     }

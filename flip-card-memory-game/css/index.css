@@ -209,7 +209,7 @@ display:block;text-align:center;}
     z-index:2;opacity:1
 }
 /*Grouped for easy prefixing*/
-.card, .flipper, .logo .show-image{
+.card, .flipper, .show-image{
     transition:400ms;-ms-transition:400ms;-webkit-transition:400ms;-moz-transition:400ms;-o-transition:400ms
 }
 .card.active .flipper, .show-image {
