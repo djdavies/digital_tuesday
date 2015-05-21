@@ -4,15 +4,15 @@
 
 (function(window){
 
-    // Setup sound for game.
+    // Setup sounds for game.
     playerShoot = new Audio("audio/191594__fins__laser.wav");
     dieSound = new Audio("audio/large_explosion_with_trail_off.mp3");
     musicPlayer = document.getElementById("hidden-music-player");
 
+    // Change the audio volume of each.
     dieSound.volume = 0.75;
     playerShoot.volume = 0.5;
     musicPlayer.volume = 0.5;
-
 
     var Game = {
         // Initialise everything we need to use.
@@ -260,7 +260,7 @@
                 // Make a buff appear on the screen
                 var randomInt  = Game.random(1,1500);
                 if (randomInt === 1) {
-                    var buff = new Health();
+                    var buff = new Buff();
                     setTimeout(function() {
                         buff.disappear();
                     }, 5000);
@@ -299,6 +299,7 @@
         if(Game.life < Game.maxLives){
             Game.invincibleMode(2000);  
             Game.life++;
+            this.speed = 8;
         } else {
             Game.pause();
             Game.gameOver();
@@ -339,6 +340,7 @@
     Player.prototype.shoot = function(){
         Game.bullets[Game.bulletIndex] = new Bullet(this.x + this.width/2);
         Game.bulletIndex++;
+
         playerShoot.play();
         playerShoot.currentTime=0;
     };
@@ -370,24 +372,8 @@
         }
     };
 
-    // Initialises the enemy/enemies (they're all the same).
-    var Enemy = function(){
-        this.width = 60;
-        this.height = 20;
-        this.x = Game.random(0, (Game.c.width - this.width));
-        this.y = Game.random(10, 40);
-        this.vy = Game.random(1, 3) * .1;
-        this.index = Game.enemyIndex;
-        Game.enemies[Game.enemyIndex] = this;
-        Game.enemyIndex++;
-        this.speed = Game.random(2, 3);
-        this.shootingSpeed = Game.random(30, 80);
-        this.movingLeft = Math.random() < 0.5 ? true : false;
-        this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
-    };
-
     // Create a health increase power up
-    var Health = function () {
+    var Buff = function () {
         this.width = 30;
         this.height = 10;
         this.x = Game.random(0, (Game.c.width - this.width));
@@ -398,17 +384,34 @@
         Game.buffIndex++;
         this.speed = 5;
         this.movingLeft = Math.random() < 0.5 ? true : false;
-        this.color = "hsla(330, 100%, 50%, 1)";
+        this.buffType = Math.random() < 0.5 ? "health" : "speed";
+
+        // Change the buff colour depending on the buff.
+        switch (this.buffType) {
+                case "health":
+                    this.color = "hsla(330, 100%, 50%, 1)";
+                    break;
+                case "speed":
+                    this.color = "hsla(56, 100%, 50%, 1)";
+                    break;
+        }
     };
 
     // Draw health icon
-    Health.prototype.draw = function() {
+    Buff.prototype.draw = function() {
         Game.ctx.fillStyle = this.color;
         Game.ctx.font = "25px Arial";
-        Game.ctx.fillText("\u2764", this.x, this.y, this.width);
+        switch (this.buffType) {
+                case "health":
+                    Game.ctx.fillText("\u2764", this.x, this.y, this.width);
+                    break;
+                case "speed":
+                    Game.ctx.fillText("\u26A1", this.x, this.y, this.width);
+                    break;
+        }
     };
 
-    Health.prototype.update = function() {
+    Buff.prototype.update = function() {
         if(this.movingLeft){
 
             if(this.x > 0){
@@ -435,34 +438,57 @@
             
             if(Game.collision(currentBuff, this)){
                 this.die();
-                delete Game.buffs[i];
+                delete Game.bullets[i];
             }
 
         } 
     }
 
-    Health.prototype.die = function() {
+    Buff.prototype.die = function() {
         this.explode();
         dieSound.play();
         dieSound.currentTime=0;
         delete Game.buffs[this.index];
-        Game.maxLives += 1;
+
+        // Activiate buff depending on type.
+        switch (this.buffType) {
+                case "health":
+                    Game.maxLives += 1;
+                    break;
+                case "speed":
+                    Game.player.speed = 16;
+                    break;
+        }
         Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
     };
 
-    Health.prototype.disappear = function() {
+    Buff.prototype.disappear = function() {
         delete Game.buffs[this.index];
         Game.buffsOnScreen = Game.buffsOnScreen > 1 ? Game.buffsOnScreen - 1 : 0;
     }
 
-
         // Exploding uses 'Particles', a little explosion animation.
-    Health.prototype.explode = function(){
+    Buff.prototype.explode = function(){
         for(var i=0; i<Game.maxParticles; i++){
             new Particle(this.x + this.width/2, this.y, this.color);
         }
     };
 
+    // Initialises the enemy/enemies (they're all the same).
+    var Enemy = function(){
+        this.width = 60;
+        this.height = 20;
+        this.x = Game.random(0, (Game.c.width - this.width));
+        this.y = Game.random(10, 40);
+        this.vy = Game.random(1, 3) * .1;
+        this.index = Game.enemyIndex;
+        Game.enemies[Game.enemyIndex] = this;
+        Game.enemyIndex++;
+        this.speed = Game.random(2, 3);
+        this.shootingSpeed = Game.random(30, 80);
+        this.movingLeft = Math.random() < 0.5 ? true : false;
+        this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
+    };
 
     // Draws the enemy.
     Enemy.prototype.draw = function(){
@@ -506,22 +532,21 @@
     // Deletes the enemies if the player has hit them, updates player score.
     Enemy.prototype.die = function(){
         this.explode();
-        dieSound.play();
-        dieSound.currentTime=0;
         delete Game.enemies[this.index];
-        Game.score += 100;
+        dieSound.play();
+        Game.score += 10;
         Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
-        while(Game.enemiesAlive < Game.maxEnemies){
+        while (Game.enemiesAlive < Game.maxEnemies){
             Game.enemiesAlive++;
-            setTimeout(function(){
-                new Enemy();
-            }, 2);
+            setTimeout(function() {
+                    new Enemy();
+            }, 2000);
         }
 
-        // Adds more enemies everytime player scores another 500 points.
+        // // Adds more enemies everytime player scores another 500 points.
         if(Game.score % 500 === 0 ){
+            Game.maxEnemies++;
             console.log("max=" + Game.maxEnemies);
-            Game.maxEnemies += 1;
         }
     };
 
