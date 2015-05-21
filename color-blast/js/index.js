@@ -60,7 +60,7 @@
             this.life = 0;
             this.binding();
             this.player = new Player();
-            this.score = 0;
+            this.score = 2900;
             this.paused = false;
             this.shooting = false;
             this.oneShot = false;
@@ -229,9 +229,8 @@
             this.ctx.fillText("Lives: " + (this.maxLives - this.life), 8, 40);
 
             // Adds more enemies everytime player scores another 457 points.
-            if(Game.score % 457 === 0){
-                Game.maxEnemies = (this.score / 457)*2 + Game.enemiesAlive;
-                Game.isBossEnemy = false;
+            if(Game.score % 500 === 0){
+                Game.maxEnemies = (this.score / 500)*2 + Game.enemiesAlive;
             }
         },
 
