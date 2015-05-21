@@ -379,7 +379,7 @@
             this.height = 120;
             if(Game.currentFrame % 3 === 0) {
                 // break in lazor-shootan'.
-                this.shootingSpeed = 1000;
+                this.shootingSpeed = 600;
             } else {
                 // LAZORS!!
                 this.shootingSpeed = Game.random(1, 1);
