@@ -21,7 +21,7 @@ var Game = {
 		this.enemyIndex = 0;
 		this.particleIndex = 0;
 		this.maxParticles = 10;
-		this.maxEnemies = 20;
+		this.maxEnemies = 2;
 		this.enemiesAlive = 0;
 		this.currentFrame = 0;
 		this.maxLives = 3;
@@ -44,11 +44,11 @@ var Game = {
 		// At the begining of the game the player will be invincible for 2 seconds.
 		this.invincibleMode(2000);
 
-		// Beign game render loop.
+		// Begin game render loop.
 		this.loop();
 	},
 
-	// Binds the controls to the game.
+	// Setup listeners to control the game.
 	binding: function(){
 		window.addEventListener("keydown", this.buttonDown);
 		window.addEventListener("keyup", this.buttonUp);
@@ -57,8 +57,8 @@ var Game = {
 		this.c.addEventListener("click", this.clicked);
 	},
 
-	// On click pause the game otherwise, check if the game is over. 
-	// If so restart the game, otherwise unpause and player is invincible for 1 second.
+	// On click, pause the game otherwise, check if the game is over. 
+	// If so, restart the game otherwise unpause the game and player is invincible for 1 second.
 	clicked: function(){
 		if(!Game.paused) {
 			Game.pause();
@@ -73,8 +73,8 @@ var Game = {
 		}
 	},
 
-	// When you press spacebar, check if player is invincible and haven't made a shot. If so fire a shot.
-	// Check if game is over if so restart the game. Also, prevent the default action of spacebar.
+	// When player press spacebar, check if player is invincible and haven't made a shot. If so fire a shot.
+	// Check if game is over ,if so restart the game. Also, prevent the default action of spacebar.
 	keyPressed: function(e){
 		if(e.keyCode === 32){
 			if(!Game.player.invincible  && !Game.oneShot){
@@ -88,8 +88,8 @@ var Game = {
 		}
 	},
 
-	// When player release spacebar. Tell the game logic that the player had fired.
-	// If player release left or right, stop player from moving in that direction.
+	// When player releases spacebar. Tell the game logic that the player had fired.
+	// If player release left or right keys, stop player from moving in that direction.
 	buttonUp: function(e){
 		if(e.keyCode === 32){
 			Game.shooting = false;
@@ -104,7 +104,7 @@ var Game = {
 		}
 	},
 
-	// When player holds down spacebar, fire shots. If player press left, move left indefinitly.
+	// When player holds down spacebar, fire multiple shots. If player press left, move left indefinitly.
 	// If player press right, move right indefinitly.
 	buttonDown: function(e){
 		if(e.keyCode === 32){
@@ -131,7 +131,7 @@ var Game = {
 	}, s);
   },
 
-  // Check if two objects collides. Using the x and y coordinates on the canvas.
+  // Check if two objects collided with each other. Using the x and y coordinates on the canvas.
   collision: function(a, b){
 		return !(
 		((a.y + a.height) < (b.y)) ||
@@ -141,7 +141,7 @@ var Game = {
 		)
 	},
 
-  // Clear the canvas by painting it white up to the width and height specified in the configuration.
+  // Clear the canvas by painting it white, up to the width and height specified in the configuration.
   clear: function(){
 	this.ctx.fillStyle = Game.color;
 	this.ctx.fillRect(0, 0, this.c.width, this.c.height);
@@ -157,7 +157,7 @@ var Game = {
 		this.paused = false;
   },
 
-  // When the game is over. Clear the game canvas. Display the game over message along with the high score.
+  // When the game is over. Clear the game canvas. Display game over message along with the high score.
   gameOver: function(){
 	this.isGameOver = true;
 	this.clear();
@@ -181,7 +181,7 @@ var Game = {
 	this.ctx.fillText("Lives: " + (this.maxLives - this.life), 8, 40);
   },
   
-	// Main game loop that draws the enemies, player and bullets on the canvas.
+	// Main game loop that draws multiple enemies, player and bullets on the canvas.
 	loop: function(){
 		if(!Game.paused){
 			// Clear the canvas.
@@ -248,7 +248,7 @@ var Player = function(){
 	this.color = "white";
 };
 
-// Player's die function. If player was hit and have remaining lives they will become invincible for 2 seconds.
+// Player's die event. If player was hit and have remaining lives. Player will become invincible for 2 seconds.
 // Otherwise, the game is over.
 Player.prototype.die = function(){
 	if(Game.life < Game.maxLives){
@@ -260,7 +260,7 @@ Player.prototype.die = function(){
 	}
 };
 
-// Draw the player on the canvas by drawing and painting the player white.
+// Draws the player on the canvas by drawing and painting the player white.
 Player.prototype.draw = function(){
 	Game.ctx.fillStyle = this.color;
 	Game.ctx.fillRect(this.x, this.y, this.width, this.height);
@@ -347,8 +347,8 @@ Enemy.prototype.draw = function(){
 	Game.ctx.fillRect(this.x, this.y, this.width, this.height);
 };
 
-// Update the enemies location on the canvas. Checks if they collided with the player's bullets. 
-// If so remove enemy and  bullets from canvas.
+// Update the current enemy location on the canvas. Checks if it had collided with the player's bullet. 
+// If so remove current enemy and bullet from canvas.
 Enemy.prototype.update = function(){
 	if(this.movingLeft){
 		if(this.x > 0){
