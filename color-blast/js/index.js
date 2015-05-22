@@ -15,13 +15,14 @@
     musicPlayer.volume = 0.5;
 
     var Game = {
+        defaultColor: "rgba(20,20,20,.7)",
         // Initialise everything we need to use.
         init: function(){
             this.c = document.getElementById("game");
             this.c.width = this.c.width;
             this.c.height = this.c.height;
             this.ctx = this.c.getContext("2d");
-            this.color = "rgba(20,20,20,.7)";
+            this.color = this.defaultColor;
             // Player's bullets.
             this.bullets = [];
             // Enemy's bullets.
@@ -46,14 +47,8 @@
             // Buffs on currently on screen.
             this.buffsOnScreen = 0;
 
-            // Maximum # of boss' on screen.
-            this.maxBossEnemies = 1;
-
             // Is the boss alive?
             this.bossEnemiesAlive = 0;
-
-            // Conditional boolean: do we want boss enemies or normal?
-            this.isBossEnemy = false;
             
             this.currentFrame = 0;
             this.maxLives = 3;
@@ -87,6 +82,14 @@
             window.addEventListener("keyup", this.buttonUp);
             window.addEventListener("keypress", this.keyPressed);
             this.c.addEventListener("click", this.clicked);
+        },
+
+        // hanles a new boss
+        handleNewBoss: function () {
+            this.bossEnemiesAlive++;
+
+            // if have some boss enemies, start to cycle the background
+            this.cycleColor(300);
         },
 
         // Ability to pause the game.  Also determines if game over and if user has unpaused.
@@ -185,8 +188,35 @@
             )
         },
 
+        cyclingColorTimerId: -1,
+
+        // change/flash background colour (when boss appears)
+        // causes the background color in the game to change
+        // randomly every n seconds
+        cycleColor: function(millis) {
+            if (Game.cyclingColorTimerId == -1) {
+
+                // start a timer that will change the color every n millis
+                var that = this;
+                Game.cyclingColorTimerId = window.setInterval(function () {
+                    that.color = "hsl("+ that.random(0, 360) +", 60%, 50%)";
+                }, millis);
+            }
+        }, 
+
+        // causes the cycling background color to stop, and
+        // resets the color to normal
+        stopCycleColor: function () {
+            // cancel the cycling color timer
+            window.clearInterval(this.cyclingColorTimerId);
+
+            // reset back to the original color
+            this.color = this.defaultColor;
+        },
+
         // Clears the screen of enemies by filling the screen with a colour?
         clear: function(){
+            
             this.ctx.fillStyle = Game.color;
             this.ctx.fillRect(0, 0, this.c.width, this.c.height);
         },
@@ -496,26 +526,13 @@
 
     // Initialises the enemy/enemies (they're all the same).
     var Enemy = function(){
-        // Normal enemies, if isBossEnemy = false.
-        if (!Game.isBossEnemy) {
-            this.width = 60;
-            this.height = 20;
-            this.shootingSpeed = Game.random(30, 80);
-            this.speed = Game.random(2, 3);
-            this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
-            this.health = 1;
-            this.isABoss = false;
-        } else {
-              // Boss enemies, if isBossEnemy = true.
-            this.width = 360;
-            this.height = 120;
-            // LAZORS!!
-            this.shootingSpeed = Game.random(1, 1);
-            this.speed = 20;
-            this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
-            this.health = 500;
-            this.isABoss = true;
-        }
+        this.width = 60;
+        this.height = 20;
+        this.shootingSpeed = Game.random(30, 80);
+        this.speed = Game.random(2, 3);
+        this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
+        this.health = 1;
+        this.isABoss = false;
 
         this.x = Game.random(0, (Game.c.width - this.width));
         this.y = Game.random(10, 40);
@@ -524,6 +541,8 @@
         Game.enemies[Game.enemyIndex] = this;
         Game.enemyIndex++;
         this.movingLeft = Math.random() < 0.5 ? true : false;
+
+        this.score = 10;
     };
 
     // Draws the enemy.
@@ -577,7 +596,6 @@
             if(Game.collision(currentBullet, this)){
                 // If you've hit him...
                 this.color = "hsl("+ Game.random(0, 360) +", 60%, 50%)";
-                console.log("Health is: " + this.health);
                 this.health--;
                 if (this.health === 0) {
                     this.die();
@@ -591,34 +609,33 @@
     Enemy.prototype.die = function(){
         this.explode();
         delete Game.enemies[this.index];
+        dieSound.currentTime=0;
         dieSound.play();
-        Game.score += 10;
-        Game.isBossEnemy = (Game.score % 3000 === 0) ? true : false;
+        Game.score += this.score;
+
+        // dirty dirty dirty!
+        if (this.isABoss) {
+            Game.stopCycleColor();
+        }
 
         // For normal enemies...
-        if(!Game.isBossEnemy) {
-            // If >1, decrement by 1; otherwise if 0, keep it 0.
-            Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
+        
+        // Keeps the enemies being decremented below 0.
+        Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
 
-            // Keep producing enemies, if the number alive is less than the max (6).
-            while(Game.enemiesAlive < Game.maxEnemies){
+        // determine whether to spawn a boss
+        var spawnBoss = Game.score % 3000 === 0;
+        if (spawnBoss) {
+            new BossEnemy();
+            Game.handleNewBoss();
+        }
+        else {
+            // Keep producing enemies, if the number alive is less than the max.
+            while(Game.enemiesAlive < Game.maxEnemies) {
                 Game.enemiesAlive++;
                 setTimeout(function(){
                     new Enemy();
-            }, 2000);
-        }
-
-          // For boss enemies (once score > 3k).
-        } else {
-
-            // While the boss is alive, and is less than the value of the maximum (1), produce one.
-            if (Game.bossEnemiesAlive < Game.maxBossEnemies){
-                // Boss is now alive...
-                Game.bossEnemiesAlive++;
-                setTimeout(function(){
-                    new Enemy();
-                    Game.isBossEnemy = false;
-                }, 2);
+                }, 2000);
             }
         }
     };
@@ -641,6 +658,22 @@
             }
         }
     };
+
+    var BossEnemy = function () {
+        // trigger the base class constructor function
+        Enemy.call(this);
+
+        this.width = 360;
+        this.height = 120;
+        // LAZORS!!
+        this.shootingSpeed = Game.random(1, 1);
+        this.speed = 20;
+        this.health = 20;
+        this.isABoss = true;
+        this.score = 100;
+    };
+
+    BossEnemy.prototype = Enemy.prototype;
 
     // Initialises enemy bullet properties.
     var EnemyBullet = function(x, y, color){
