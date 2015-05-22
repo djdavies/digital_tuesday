@@ -3,11 +3,12 @@
 // © 2014 Nate Wiley
 
 (function(window){
-
-    // Setup sounds for game.
+2
+    // Setup sounds for game.2
     playerShoot = new Audio("audio/191594__fins__laser.wav");
     dieSound = new Audio("audio/large_explosion_with_trail_off.mp3");
     musicPlayer = document.getElementById("hidden-music-player");
+    dieSoundBoss = new Audio("audio/95887__cmusounddesign__etl-duck-explodes-24-96.wav");
 
     // Change the audio volume of each.
     dieSound.volume = 0.75;
@@ -55,11 +56,12 @@
             this.life = 0;
             this.binding();
             this.player = new Player();
-            this.score = 2900;
+            this.score = 2980;
             this.paused = false;
             this.shooting = false;
             this.oneShot = false;
             this.isGameOver = false;
+
             // Requests animation frames for multiple browser rendering engines.
             this.requestAnimationFrame = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame;
             
@@ -262,6 +264,15 @@
             if(Game.score % 500 === 0){
                 Game.maxEnemies = (this.score / 500)*2 + Game.enemiesAlive;
             }
+        },
+
+        textEvent: function (eventMessage) {
+            setTimeout(function(textEvent) {
+                this.ctx.fillStyle = "red"; 
+                this.ctx.font="128px Lato, sans-serif";
+                this.ctx.fillText(eventMessage, 250, 250);
+                this.disappear();
+            }, 5000);
         },
 
         // The main game loop.
@@ -616,6 +627,8 @@
         // dirty dirty dirty!
         if (this.isABoss) {
             Game.stopCycleColor();
+            dieSoundBoss.play();
+            Game.textEvent("YEAH!");
         }
 
         // For normal enemies...
@@ -624,7 +637,7 @@
         Game.enemiesAlive = Game.enemiesAlive > 1 ? Game.enemiesAlive - 1 : 0;
 
         // determine whether to spawn a boss
-        var spawnBoss = Game.score % 3000 === 0;
+        var spawnBoss = Game.score % 1000 === 0;
         if (spawnBoss) {
             new BossEnemy();
             Game.handleNewBoss();
@@ -668,7 +681,7 @@
         // LAZORS!!
         this.shootingSpeed = Game.random(1, 1);
         this.speed = 20;
-        this.health = 20;
+        this.health = 50;
         this.isABoss = true;
         this.score = 100;
     };
