@@ -7,10 +7,10 @@
 var Game = {
 	// Game configuration.
 	init: function(){
-		this.c = document.getElementById("game");
-		this.c.width = this.c.width;
-		this.c.height = this.c.height;
-		this.ctx = this.c.getContext("2d");
+		this.canvas = document.getElementById("game");
+		this.canvas.width = this.canvas.width;
+		this.canvas.height = this.canvas.height;
+		this.ctx = this.canvas.getContext("2d");
 		this.color = "rgba(20,20,20,.7)";
 		this.bullets = [];
 		this.enemyBullets = [];
@@ -54,7 +54,7 @@ var Game = {
 		window.addEventListener("keyup", this.buttonUp);
 		window.addEventListener("keypress", this.keyPressed);
 		// add listener to the context of the canvas.
-		this.c.addEventListener("click", this.clicked);
+		this.canvas.addEventListener("click", this.clicked);
 	},
 
 	// On click, pause the game otherwise, check if the game is over. 
@@ -76,6 +76,7 @@ var Game = {
 	// When player press spacebar, check if player is invincible and haven't made a shot. If so fire a shot.
 	// Check if game is over ,if so restart the game. Also, prevent the default action of spacebar.
 	keyPressed: function(e){
+		e.preventDefault();
 		if(e.keyCode === 32){
 			if(!Game.player.invincible  && !Game.oneShot){
 				Game.player.shoot();
@@ -84,17 +85,16 @@ var Game = {
 			if(Game.isGameOver){
 				Game.init();
 			}
-			e.preventDefault();
 		}
 	},
 
 	// When player releases spacebar. Tell the game logic that the player had fired.
 	// If player release left or right keys, stop player from moving in that direction.
 	buttonUp: function(e){
+		e.preventDefault();
 		if(e.keyCode === 32){
 			Game.shooting = false;
 			Game.oneShot = false;
-			e.preventDefault();
 		}
 		if(e.keyCode === 37 || e.keyCode === 65){
 			Game.player.movingLeft = false;
@@ -144,7 +144,7 @@ var Game = {
   // Clear the canvas by painting it white, up to the width and height specified in the configuration.
   clear: function(){
 	this.ctx.fillStyle = Game.color;
-	this.ctx.fillRect(0, 0, this.c.width, this.c.height);
+	this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   },
    
    // Pause the game.
@@ -167,10 +167,10 @@ var Game = {
 	this.pause();
 	this.ctx.fillStyle = "white";
 	this.ctx.font = "bold 30px Lato, sans-serif";
-	this.ctx.fillText(message, this.c.width/2 - this.ctx.measureText(message).width/2, this.c.height/2 - 50);
-	this.ctx.fillText(message2, this.c.width/2 - this.ctx.measureText(message2).width/2, this.c.height/2 - 5);
+	this.ctx.fillText(message, this.canvas.width/2 - this.ctx.measureText(message).width/2, this.canvas.height/2 - 50);
+	this.ctx.fillText(message2, this.canvas.width/2 - this.ctx.measureText(message2).width/2, this.canvas.height/2 - 5);
 	this.ctx.font = "bold 16px Lato, sans-serif";
-	this.ctx.fillText(message3, this.c.width/2 - this.ctx.measureText(message3).width/2, this.c.height/2 + 30);
+	this.ctx.fillText(message3, this.canvas.width/2 - this.ctx.measureText(message3).width/2, this.canvas.height/2 + 30);
   },
 
   // Every game frame redraw the game score and the player's life.
@@ -239,8 +239,8 @@ var Game = {
 var Player = function(){
 	this.width = 60;
 	this.height = 20;
-	this.x = Game.c.width/2 - this.width/2;
-	this.y = Game.c.height - this.height;
+	this.x = Game.canvas.width/2 - this.width/2;
+	this.y = Game.canvas.height - this.height;
 	this.movingLeft = false;
 	this.movingRight = false;
 	this.speed = 8;
@@ -271,7 +271,7 @@ Player.prototype.update = function(){
 	if(this.movingLeft && this.x > 0){
 		this.x -= this.speed;
 	}
-	if(this.movingRight && this.x + this.width < Game.c.width){
+	if(this.movingRight && this.x + this.width < Game.canvas.width){
 		this.x += this.speed;
 	}
 	if(Game.shooting && Game.currentFrame % 10 === 0){
@@ -300,7 +300,7 @@ var Bullet = function(x){
 	this.width = 8;
 	this.height = 20;
 	this.x = x;
-	this.y = Game.c.height - 10;
+	this.y = Game.canvas.height - 10;
 	this.vy = 8;
 	this.index = Game.bulletIndex;
 	this.active = true;
@@ -328,7 +328,7 @@ Bullet.prototype.update = function(){
 var Enemy = function(){
 	this.width = 60;
 	this.height = 20;
-	this.x = Game.random(0, (Game.c.width - this.width));
+	this.x = Game.random(0, (Game.canvas.width - this.width));
 	this.y = Game.random(10, 40);
 	this.vy = Game.random(1, 3) * .1;
 	this.index = Game.enemyIndex;
@@ -358,7 +358,7 @@ Enemy.prototype.update = function(){
 			this.movingLeft = false;
 		}
 	} else {
-		if(this.x + this.width < Game.c.width){
+		if(this.x + this.width < Game.canvas.width){
 			this.x += this.speed;
 			this.y += this.vy;
 		} else {
@@ -428,7 +428,7 @@ EnemyBullet.prototype.draw = function(){
 // If so remove bullet from screen.
 EnemyBullet.prototype.update = function(){
 	this.y += this.vy;
-	if(this.y > Game.c.height){
+	if(this.y > Game.canvas.height){
 		delete Game.enemyBullets[this.index];
 	}
 };
@@ -449,7 +449,7 @@ var Particle = function(x, y, color){
 	this.maxlife = 100;
   }
 
-  // Draw the partibles on the cancas. Once a threshold has been reached remove from canvas.
+  // Draw the partibles on the canvas. Once a threshold has been reached remove from canvas.
   Particle.prototype.draw = function(){
 	this.x += this.vx;
 	this.y += this.vy;
