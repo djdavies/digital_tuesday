@@ -29,7 +29,6 @@ var Game = {
 		this.binding();
 		this.player = new Player();
 		this.score = 0;
-		this.paused = false;
 		this.shooting = false;
 		this.oneShot = false;
 		this.isGameOver = false;
@@ -55,22 +54,6 @@ var Game = {
 		window.addEventListener("keypress", this.keyPressed);
 		// add listener to the context of the canvas.
 		this.canvas.addEventListener("click", this.clicked);
-	},
-
-	// On click, pause the game otherwise, check if the game is over. 
-	// If so, restart the game otherwise unpause the game and player is invincible for 1 second.
-	clicked: function(){
-		if(!Game.paused) {
-			Game.pause();
-		} else {
-			if(Game.isGameOver){
-				Game.init();
-			} else {
-				Game.unPause();
-				Game.loop();
-				Game.invincibleMode(1000);
-			}
-		}
 	},
 
 	// When player press spacebar, check if player is invincible and haven't made a shot. If so fire a shot.
@@ -147,16 +130,6 @@ var Game = {
 	this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
   },
    
-   // Pause the game.
-  pause: function(){
-  	this.paused = true;
-  },
-
-  // Unpause the game.
-  unPause: function(){
-		this.paused = false;
-  },
-
   // When the game is over. Clear the game canvas. Display game over message along with the high score.
   gameOver: function(){
 	this.isGameOver = true;
@@ -164,7 +137,6 @@ var Game = {
 	var message = "Game Over";
 	var message2 = "Score: " + Game.score;
 	var message3 = "Click or press Spacebar to Play Again";
-	this.pause();
 	this.ctx.fillStyle = "white";
 	this.ctx.font = "bold 30px Lato, sans-serif";
 	this.ctx.fillText(message, this.canvas.width/2 - this.ctx.measureText(message).width/2, this.canvas.height/2 - 50);
@@ -183,51 +155,50 @@ var Game = {
   
 	// Main game loop that draws multiple enemies, player and bullets on the canvas.
 	loop: function(){
-		if(!Game.paused){
-			// Clear the canvas.
-			Game.clear();
-			// Draw & update enemies.
-			for(var i in Game.enemies){
-				var currentEnemy = Game.enemies[i];
-				currentEnemy.draw();
-				currentEnemy.update();
-				// If the game frame number can be full divided by the shooting speed fire.
-				if(Game.currentFrame % currentEnemy.shootingSpeed === 0){
-					currentEnemy.shoot();
-				}
+		// Clear the canvas.
+		Game.clear();
+		// Draw & update enemies.
+		for(var i in Game.enemies){
+			var currentEnemy = Game.enemies[i];
+			currentEnemy.draw();
+			currentEnemy.update();
+			// If the game frame number can be full divided by the shooting speed fire.
+			if(Game.currentFrame % currentEnemy.shootingSpeed === 0){
+				currentEnemy.shoot();
 			}
-			// Draw and update enemy bullets.
-			for(var x in Game.enemyBullets){
-				Game.enemyBullets[x].draw();
-				Game.enemyBullets[x].update();
-			}
+		}
+		// Draw and update enemy bullets.
+		for(var x in Game.enemyBullets){
+			Game.enemyBullets[x].draw();
+			Game.enemyBullets[x].update();
+		}
 
-			// Draw and update the player's bullets.
-			for(var z in Game.bullets){
-				Game.bullets[z].draw();
-				Game.bullets[z].update();
-			}
+		// Draw and update the player's bullets.
+		for(var z in Game.bullets){
+			Game.bullets[z].draw();
+			Game.bullets[z].update();
+		}
 
-			// If the player is invisible, only draw the player once every 5 frames.
-			if(Game.player.invincible){
-				if(Game.currentFrame % 20 === 0){
-					Game.player.draw();
-				}
-			} else {
+		// If the player is invisible, only draw the player once every 5 frames.
+		if(Game.player.invincible){
+			if(Game.currentFrame % 20 === 0){
 				Game.player.draw();
 			}
-
-			// For every exploding animtion draw particles.
-			for(var i in Game.particles){
-			  Game.particles[i].draw();
-			}
-
-			// Every frame update the player's position, score and change to the next frame.
-			// At the end of the loop.
-			Game.player.update();
-			Game.updateScore();
-			Game.currentFrame = Game.requestAnimationFrame.call(window, Game.loop);
+		} else {
+			Game.player.draw();
 		}
+
+		// For every exploding animtion draw particles.
+		for(var i in Game.particles){
+		  Game.particles[i].draw();
+		}
+
+		// Every frame update the player's position, score and change to the next frame.
+		// At the end of the loop.
+		Game.player.update();
+		Game.updateScore();
+		Game.currentFrame = Game.requestAnimationFrame.call(window, Game.loop);
+	
 	}
 
 };
@@ -255,7 +226,6 @@ Player.prototype.die = function(){
 		Game.invincibleMode(2000);  
 		Game.life++;
 	} else {
-		Game.pause();
 		Game.gameOver();
 	}
 };
