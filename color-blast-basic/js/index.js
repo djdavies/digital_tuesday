@@ -45,9 +45,6 @@
                 this.enemiesAlive++;
             }
 
-            // At the begining of the game the player will be invincible for 2 seconds.
-            this.invincibleMode(2000);
-
             // Begin game render loop.
             this.loop();
         },
@@ -61,12 +58,12 @@
             this.canvas.addEventListener("click", this.clicked);
         },
 
-        // When player press spacebar, check if player is invincible and haven't made a shot. If so fire a shot.
+        // When player press spacebar, check if player hasn't made a shot. If so fire a shot.
         // Check if game is over ,if so restart the game. Also, prevent the default action of spacebar.
         keyPressed: function(e){
             e.preventDefault();
             if(e.keyCode === 32){
-                if(!Game.player.invincible  && !Game.oneShot){
+                if(!Game.oneShot){
                     Game.player.shoot();
                     Game.oneShot = true;
                 }
@@ -111,14 +108,6 @@
             return Math.floor(Math.random() * (max - min) + min);
         },
 
-        // Invincible mode where 1000 == 1 second.
-        invincibleMode: function(s){
-            this.player.invincible = true;
-            setTimeout(function(){
-                Game.player.invincible = false;
-            }, s);
-        },
-
         // Check if two objects collided with each other. Using the x and y coordinates on the canvas.
         collision: function(a, b){
             return !(
@@ -160,6 +149,10 @@
       
         // Main game loop that draws multiple enemies, player and bullets on the canvas.
         loop: function(){
+
+            if( Game.isGameOver ) {
+                Game.gameOver;
+            } else {
             // Clear the canvas.
             Game.clear();
             // Draw & update enemies.
@@ -184,20 +177,15 @@
                 Game.bullets[z].update();
             }
 
-            // If the player is invisible, only draw the player once every 5 frames.
-            if(Game.player.invincible){
-                if(Game.currentFrame % 20 === 0){
-                    Game.player.draw();
-                }
-            } else {
-                Game.player.draw();
-            }
+            // Draw the player once
+            Game.player.draw();
             // Every frame update the player's position, score and change to the next frame.
             // At the end of the loop.
             Game.player.update();
             Game.updateScore();
             Game.currentFrame = Game.requestAnimationFrame.call(window, Game.loop);
-        
+            
+            }
         }
 
     }; // END OF GAME CONFIGURATION
@@ -216,15 +204,13 @@
         this.movingLeft = false;
         this.movingRight = false;
         this.speed = 8;
-        this.invincible = false;
         this.color = "white";
     };
 
-    // Player's die event. If player was hit and have remaining lives. Player will become invincible for 2 seconds.
+    // Player's die event. If player was hit and reduce their remaining lives.
     // Otherwise, the game is over.
     Player.prototype.die = function(){
         if(Game.life < Game.maxLives){
-            Game.invincibleMode(2000);  
             Game.life++;
         } else {
             Game.gameOver();
@@ -250,7 +236,7 @@
         }
         for(var i in Game.enemyBullets){
             var currentBullet = Game.enemyBullets[i];
-            if(Game.collision(currentBullet, this) && !Game.player.invincible){
+            if(Game.collision(currentBullet, this)){
                 this.die();
                 delete Game.enemyBullets[i];
             }
